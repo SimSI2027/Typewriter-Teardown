@@ -10,7 +10,7 @@
             "codec_name": "h264",
             "width": 1920,
             "height": 1080,
-            "pix_fmt": "yuvj420p",
+            "pix_fmt": "yuv420p",
             "r_frame_rate": "60/1",
             "side_data_list": [
                 {
@@ -20,7 +20,7 @@
         },
         {
             "codec_name": "aac",
-            "sample_rate": "96000",
+            "sample_rate": "48000",
             "r_frame_rate": "0/0"
         }
     ],
