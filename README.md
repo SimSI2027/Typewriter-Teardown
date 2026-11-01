@@ -5,8 +5,9 @@ keyboard or by clicking its glass keys; open any mechanism with one button; watc
 the keys, linkage, typebars, ribbon, escapement, carriage, bell, platen and paper, while every gauge, chart and the live
 schematic read that same model.
 
-**Live demo:** https://simsi2027.github.io/Typewriter-Teardown/  
-**Tour video (35 s, 1080p60, with sound):** [underwood-no5-tour.mp4](https://github.com/SimSI2027/Typewriter-Teardown/releases/download/v1.0.0/underwood-no5-tour.mp4)
+**Live demo:** https://simsi2027.github.io/Typewriter-Teardown/
+
+The tour can also be rendered to a deterministic 35 s 1080p60 video with sound (`npm run video`; see below).
 
 ![Underwood No. 5 teardown simulator](public/social-preview.png)
 

@@ -53,7 +53,7 @@ column 65; platen rotation equals paper travel (arc length); callout leaders end
 
 ## Video
 
-`npm run video` → `validation/video/underwood-no5-tour.mp4` (git-ignored; attached to the GitHub release):
+`npm run video` → `validation/video/underwood-no5-tour.mp4` (45 MB, git-ignored; regenerate with `npm run video`):
 35.5 s, 1920 × 1080, 60 fps, H.264 yuv420p, faststart, AAC 48 kHz, peak −1.4 dBFS. Every frame is rendered by
 `window.SIM.render(t)`; the soundtrack is rendered offline from the same session's cues. Audio onsets measured in the
 soundtrack match the modelled impacts (f 5.26 s, o 8.56 s, r 11.92 s).
