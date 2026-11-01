@@ -245,7 +245,7 @@ export function createSession(opts = {}) {
       const a = resolve(req, before);
       if (a.type === 'noop' && !opts.keepNoop) return null;
       a.dur = DUR[a.type] ?? 0.2;
-      a.t0 = Math.max(t, S.end);
+      a.t0 = acts.length ? Math.max(t, S.end) : t; // the first action may start before 0 (a hand-over mid-stroke)
       a.before = before;
       a.after = apply(a, before, a.t0, a.dur);
       if (a.type === 'char') {
@@ -520,8 +520,8 @@ function finish(o, S, t) {
   o.spoolR = -spoolTurn(RIBBON.length - L) / D2R;
   o.spoolRL = spoolR(L);
   o.spoolRR = spoolR(RIBBON.length - L);
-  o.tension = MAINSPRING.tension0 + MAINSPRING.rate * (o.colPos * PITCH);
-  o.drumDeg = ((o.colPos * PITCH) / MAINSPRING.drumR) / D2R;
+  o.tension = MAINSPRING.tension0 - MAINSPRING.rate * (o.colPos * PITCH);
+  o.drumDeg = (-(o.colPos * PITCH) / MAINSPRING.drumR) / D2R; // the band winds in as the carriage moves left
   o.marginDist = lineLimit(o) - o.colPos;
   o.bellCol = bellCol();
   // the bell hammer: cocked by the trip as the carriage crosses the last space before the bell column, then it

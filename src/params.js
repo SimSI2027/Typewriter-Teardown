@@ -30,6 +30,9 @@ export const BODY = {
   footH: 16, // E  rubber foot height
   baseY: 16, // E  underside of the cast base
   railFrontZ: 236, // E  front of the keyboard rail ("No 5  UNDERWOOD STANDARD TYPEWRITER")
+  railTopY: 37, // E  top of the front rail (the space bar rides above it)
+  hoodZ: 132, // E  decal panel ("UNDERWOOD") in front of the basket
+  deckOpenR: 142, // E  plan radius of the deck opening the typebars rise through (checked: bars cross the deck plane at ≤ 135 mm)
 };
 
 // ------------------------------------------------------------ printing point, platen, paper
@@ -73,9 +76,9 @@ export const CARRIAGE = {
   bellBefore: 7, // V  bell 7 spaces before the line lock
   lineLockGrace: 0, // S  keys lock exactly at the right margin until MARGIN RELEASE
   releaseExtra: 8, // E  spaces available past the margin with MARGIN RELEASE
-  frameLen: 404, // E  carriage frame length (end plate to end plate)
+  frameLen: 300, // E  carriage frame length (end plate to end plate)
   railY: 204, // E  carriage rail level
-  railZ: [-112, -64], // E  front and rear carriage rails
+  railZ: [-130, -60], // E  rear and front carriage rails
   shiftTravel: 5.0, // E  subcarriage lift for upper case (separation of the two characters on a slug)
   // carriage x offset for a column position: the paper's column c sits over the printing point
   x: (col) => -(col - 42) * PITCH,
@@ -88,7 +91,9 @@ export const ESC = {
   }, // pitch radius that makes 1 wheel tooth = 1 pica space
   wheelR: 17, // E
   axisY: 176, // E  escapement shaft height (axis along z)
-  axisZ: -118, // E
+  axisZ: -112, // E  shaft; the star wheel sits behind, the pinion in front
+  wheelZ: -120, // E
+  pinionZ: -104, // E  pinion meshes with the carriage rack (same z)
   rackY: 0, // derived: rack pitch line = axisY + pinionR (computed in model)
   looseFrac: 0.22, // E  fraction of a tooth the wheel turns when the loose dog lets go (it then rests on the rigid dog)
   rockerTravel: 7, // E  rocker tilt, degrees, at full universal-bar travel
@@ -97,11 +102,13 @@ export const ESC = {
 };
 export const MAINSPRING = {
   drumR: 22, // E
-  drumX: -156, // E  drum at the rear left of the frame
-  drumY: 120,
-  drumZ: -136,
-  tension0: 6.0, // E  N at the right end of travel (carriage fully returned)
-  rate: 0.022, // E  N per mm of carriage travel to the left (simplified linear spring)
+  drumX: -150, // E  drum (vertical axis) behind the rear left of the frame; the drawband runs to the carriage's right end
+  drumY: 188,
+  drumZ: -170,
+  drumH: 16,
+  bandY: 196, // E  drawband height
+  tension0: 9.0, // E  N with the carriage at column 0 (spring most wound: the start of a line)
+  rate: 0.012, // E  N lost per mm the carriage travels to the left (simplified linear spring)
 };
 
 // ------------------------------------------------------------ keyboard, key levers, linkage (E from photographs)
@@ -124,7 +131,7 @@ export const KEYS = {
   combZ: 118, // E  key lever comb (guides the levers near the front)
   sublever: {pivotZ: 40, pivotY: 52, arm: 22}, // E  sublever comb position and arm length
   linkPull: 6.8, // E  heel pull at full key travel (equal for every key: sublever ratios compensate the rows)
-  spacebar: {z: 236, y: 52, w: 236, travel: 9}, // E
+  spacebar: {z: 229, y: 50, w: 236, travel: 8}, // E
   shiftKey: {w: 26}, // E
 };
 
@@ -159,9 +166,9 @@ export const RIBBON = {
   restTop: -6.0, // E  ribbon top edge relative to the printing line at rest (writing stays visible)
   // lift so the chosen half's centre covers the printing line: black → upper half, red → lower half, stencil none
   lift: {black: 6.0 + 3.2, red: 6.0 + 9.5, stencil: 0}, // E
-  z: 1.4, // E  ribbon plane in front of the paper
-  spoolX: 148, // E  spool centres (vertical axes) left/right
-  spoolZ: 22,
+  z: 0.6, // E  ribbon plane in front of the paper (the slug presses it onto the paper at impact)
+  spoolX: 165, // E  spool centres (vertical axes) left/right — outside the swing of the outer typebars (checked)
+  spoolZ: 40,
   spoolY: 201,
   spoolCoreR: 9,
   spoolFullR: 27,
@@ -241,17 +248,17 @@ export const EXPLODE = {
 // ------------------------------------------------------------ cameras: target (mm), azimuth from +z toward +x,
 // elevation, distance (mm), screen shift (px of the 1600×900 stage)
 export const CAMS = {
-  hero: {t: [0, 150, 30], az: 38, el: 24, d: 1380, sx: 40, sy: 0},
-  operator: {t: [0, 150, 60], az: 0, el: 30, d: 1250, sx: 40, sy: 0},
-  keyboard: {t: [0, 100, 160], az: 14, el: 46, d: 720, sx: 40, sy: 0},
-  side: {t: [0, 140, 30], az: 90, el: 10, d: 1300, sx: 40, sy: 0},
-  top: {t: [0, 150, 20], az: 0, el: 80, d: 1300, sx: 40, sy: 0},
-  typebars: {t: [0, 200, 60], az: 28, el: 34, d: 640, sx: 40, sy: 0},
-  impact: {t: [0, 228, 10], az: 40, el: 18, d: 330, sx: 40, sy: 0},
-  escapement: {t: [0, 180, -110], az: 150, el: 22, d: 520, sx: 40, sy: 0},
-  ribbon: {t: [0, 215, 20], az: 20, el: 40, d: 620, sx: 40, sy: 0},
-  carriage: {t: [0, 225, -60], az: 150, el: 30, d: 1050, sx: 40, sy: 0},
-  rear: {t: [0, 160, -40], az: 180, el: 22, d: 1250, sx: 40, sy: 0},
-  platen: {t: [-120, 235, -20], az: -50, el: 22, d: 640, sx: 40, sy: 0},
-  inside: {t: [0, 120, 40], az: 62, el: 14, d: 560, sx: 40, sy: 0},
+  hero: {t: [0, 150, 40], az: 36, el: 24, d: 1520, sx: 0, sy: -34},
+  operator: {t: [0, 150, 70], az: 0, el: 30, d: 1450, sx: 0, sy: -30},
+  keyboard: {t: [0, 105, 150], az: 16, el: 44, d: 1000, sx: 0, sy: -20},
+  side: {t: [0, 160, 40], az: 90, el: 8, d: 1500, sx: 0, sy: -30},
+  top: {t: [0, 150, 40], az: 0, el: 82, d: 1500, sx: 0, sy: -20},
+  typebars: {t: [0, 200, 50], az: 24, el: 34, d: 780, sx: 0, sy: -20},
+  impact: {t: [0, 224, 12], az: 22, el: 28, d: 410, sx: 0, sy: -20},
+  escapement: {t: [0, 172, -114], az: 168, el: 16, d: 520, sx: 0, sy: -20},
+  ribbon: {t: [0, 220, 30], az: 18, el: 30, d: 640, sx: 0, sy: -20},
+  carriage: {t: [0, 225, -50], az: 150, el: 28, d: 1250, sx: 0, sy: -30},
+  rear: {t: [0, 170, -40], az: 180, el: 20, d: 1450, sx: 0, sy: -30},
+  platen: {t: [-110, 236, -20], az: -48, el: 22, d: 700, sx: 0, sy: -20},
+  inside: {t: [0, 130, 50], az: 64, el: 14, d: 640, sx: 0, sy: -20},
 };
