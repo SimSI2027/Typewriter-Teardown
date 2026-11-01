@@ -25,9 +25,9 @@ const CSS = `
 .rd span:last-child{font-weight:600;color:${C.ink};letter-spacing:.2px;text-align:right}
 .rd.hot span:last-child{color:${C.acc}}
 .call{position:absolute;white-space:nowrap;pointer-events:none}
-.call{text-shadow:0 0 3px #f6f3ec,0 0 3px #f6f3ec,0 0 6px #f6f3ec}
-.call b{display:block;font-size:12px;font-weight:600;letter-spacing:.1px}
-.call span{display:block;font-size:8.6px;font-weight:600;letter-spacing:1.4px;color:${C.mute};text-transform:uppercase;margin-top:2px}
+.call b{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.1px;background:rgba(250,248,243,.9);padding:1px 5px}
+.call span{display:block;font-size:8.6px;font-weight:600;letter-spacing:1.4px;color:${C.mute};text-transform:uppercase;margin-top:1px;background:rgba(250,248,243,.9);padding:1px 5px;width:max-content}
+.call[style*="text-align:right"] span{margin-left:auto}
 .sl{position:absolute;height:22px;pointer-events:auto;cursor:ew-resize}
 .sl:focus-visible{outline:2px solid ${C.acc};outline-offset:1px}
 .sl i{position:absolute;left:0;right:0;top:10px;height:2px;background:#e2ddd2}

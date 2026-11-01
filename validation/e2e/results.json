@@ -1,6 +1,6 @@
 {
- "date": "2026-11-01T23:22:02.779Z",
- "base": "http://127.0.0.1:58587/Typewriter-Teardown/",
+ "date": "2026-11-01T23:29:51.169Z",
+ "base": "http://127.0.0.1:55246/Typewriter-Teardown/",
  "results": [
   {
    "name": "loads under the Pages base path with the tour running, no errors",
@@ -15,127 +15,127 @@
   {
    "name": "a click hands the machine to the visitor; the tour paper carries over",
    "ok": true,
-   "ms": 1859
+   "ms": 1848
   },
   {
    "name": "physical typing prints at the carriage position; space, backspace, return",
    "ok": true,
-   "ms": 1601
+   "ms": 1592
   },
   {
    "name": "shift (held) prints upper case through carriage shift; caps lock locks it",
    "ok": true,
-   "ms": 1165
+   "ms": 1168
   },
   {
    "name": "unsupported characters fail safely",
    "ok": true,
-   "ms": 418
+   "ms": 405
   },
   {
    "name": "clicking the visible typewriter keys types them",
    "ok": true,
-   "ms": 2016
+   "ms": 1994
   },
   {
    "name": "every subsystem button isolates its assembly; reassemble restores",
    "ok": true,
-   "ms": 5335
+   "ms": 5302
   },
   {
    "name": "every camera button moves to its view",
    "ok": true,
-   "ms": 2672
+   "ms": 2640
   },
   {
    "name": "x-ray and cutaway toggle",
    "ok": true,
-   "ms": 1820
+   "ms": 1818
   },
   {
    "name": "machine buttons: return, spacing, ribbon colour, lock",
    "ok": true,
-   "ms": 2571
+   "ms": 2556
   },
   {
    "name": "pause, resume, step, slow motion, speed, timeline scrub",
    "ok": true,
-   "ms": 769
+   "ms": 749
   },
   {
    "name": "reset clears the sheet and returns the carriage",
    "ok": true,
-   "ms": 420
+   "ms": 418
   },
   {
    "name": "sound: mute toggles, volume slider",
    "ok": true,
-   "ms": 251
+   "ms": 206
   },
   {
    "name": "panels hide and show (button and Esc)",
    "ok": true,
-   "ms": 94
+   "ms": 106
   },
   {
    "name": "all quality modes render without errors",
    "ok": true,
-   "ms": 2533
+   "ms": 2465
   },
   {
    "name": "orbit and zoom",
    "ok": true,
-   "ms": 467
+   "ms": 466
   },
   {
    "name": "tour button and chip restart the tour; inactivity resumes it, never mid-drag",
    "ok": true,
-   "ms": 731
+   "ms": 732
   },
   {
    "name": "controls are keyboard accessible with visible focus",
    "ok": true,
-   "ms": 2
+   "ms": 1
   },
   {
    "name": "no console errors or failed requests during the session",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "name": "layout laptop-1366 (1366×768): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 956
+   "ms": 968
   },
   {
    "name": "layout laptop-1280 (1280×720): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 929
+   "ms": 959
   },
   {
    "name": "layout desktop-1080p (1920×1080): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1001
+   "ms": 1018
   },
   {
    "name": "layout phone-landscape (844×390): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1476
+   "ms": 1126
   },
   {
    "name": "layout phone-portrait (390×844): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1160
+   "ms": 1157
   },
   {
    "name": "reduced motion: the tour does not start by itself",
    "ok": true,
-   "ms": 847
+   "ms": 846
   },
   {
    "name": "also works at the site root (base-path independent assets)",
    "ok": true,
-   "ms": 864
+   "ms": 838
   }
  ]
 }

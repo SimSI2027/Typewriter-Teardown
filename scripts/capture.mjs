@@ -110,7 +110,7 @@ const run = async () => {
     const fps = Number(opt('fps', 60));
     const from = Number(opt('from', 0));
     const frames = Math.round((end - from) * fps);
-    const ff = spawn(FFMPEG, ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(opt('crf', 17)), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], {stdio: ['pipe', 'inherit', 'inherit']});
+    const ff = spawn(FFMPEG, ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-', '-vf', 'scale=in_range=pc:out_range=tv,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(opt('crf', 17)), '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-movflags', '+faststart', out], {stdio: ['pipe', 'inherit', 'inherit']});
     const t0 = Date.now();
     for (let i = 0; i < frames; i++) {
       await draw(from + i / fps);

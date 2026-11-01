@@ -123,11 +123,11 @@ export const KEYS = {
   capH: 3.4, // E
   stemR: 1.3, // E
   travel: 14, // E  key dip (~9/16 in)
-  leverY: 34, // E  key lever top at rest
+  leverY: 44, // E  key lever top at rest (raised from 34: a depressed lever touched the base plate — found by tests/model/mechanics)
   leverW: 2.2, // E  lever thickness (they are flat bars on edge)
   leverH: 7,
   fulcrumZ: -66, // E  key lever fulcrum rod (rear)
-  fulcrumY: 30,
+  fulcrumY: 40,
   combZ: 118, // E  key lever comb (guides the levers near the front)
   sublever: {pivotZ: 40, pivotY: 52, arm: 22}, // E  sublever comb position and arm length
   linkPull: 6.8, // E  heel pull at full key travel (equal for every key: sublever ratios compensate the rows)

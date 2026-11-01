@@ -19,7 +19,7 @@ const wav = path.join(OUT, 'tour-score.wav');
 const final = path.join(OUT, 'underwood-no5-tour.mp4');
 run(['scripts/capture.mjs', '--audio', wav]);
 run(['scripts/capture.mjs', '--video', silent, '--dpr', '1.2', '--fps', '60', '--crf', '17']);
-execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', silent, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-af', 'loudnorm=I=-16:TP=-2:LRA=11', '-shortest', '-movflags', '+faststart', final], {stdio: 'inherit'});
+execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', silent, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-af', 'loudnorm=I=-16:TP=-2:LRA=11,aresample=48000,alimiter=limit=0.79:level=false', '-ar', '48000', '-shortest', '-movflags', '+faststart', final], {stdio: 'inherit'});
 const probe = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_name,width,height,r_frame_rate,pix_fmt,sample_rate:format=duration', '-of', 'json', final]).toString();
 fs.writeFileSync(path.join(OUT, 'probe.json'), probe);
 console.log(probe);
@@ -29,6 +29,6 @@ const ts = [0.5, ...BEATS.filter((b) => b.click || b.type).map((b) => b.t + 0.9)
 const dir = path.join(OUT, 'sheet-frames');
 fs.rmSync(dir, {recursive: true, force: true});
 fs.mkdirSync(dir, {recursive: true});
-ts.forEach((t, i) => execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-ss', t.toFixed(2), '-i', final, '-frames:v', '1', '-vf', `scale=640:360,drawtext=text='t=${t.toFixed(1)}':x=8:y=8:fontsize=22:fontcolor=white:box=1:boxcolor=black@0.6`, path.join(dir, `${String(i).padStart(3, '0')}.png`)]));
+ts.forEach((t, i) => execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-ss', t.toFixed(2), '-i', final, '-frames:v', '1', '-vf', 'scale=640:360', path.join(dir, `${String(i).padStart(3, '0')}.png`)]));
 execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-framerate', '1', '-i', path.join(dir, '%03d.png'), '-vf', `tile=5x${Math.ceil(ts.length / 5)}:padding=4:color=0x333333`, '-frames:v', '1', path.join(OUT, 'video-contact-sheet.png')]);
 console.log('→', final, '\n→', path.join(OUT, 'video-contact-sheet.png'));
