@@ -229,16 +229,16 @@ export const EXPLODE = {
   bell: [-130, 20, -20],
   mainspring: [-120, -10, -90],
   escapement: [0, -10, -130],
-  ubar: [0, -30, -60],
+  ubar: [0, -24, -60],
   ribbon: [0, 85, 30],
   vibrator: [0, 50, 55],
   typebars: [0, 40, 70], // fanned further in subsystem view
   segment: [0, 18, 40],
-  linkage: [0, -45, 30],
-  levers: [0, -75, 20],
+  linkage: [0, 34, 46], // up and forward: nothing may pass below the base or through the floor
+  levers: [0, 18, 112], // lifted clear of the front rail (top 37 mm), then slid out of the front
   keys: [0, 60, 70],
   spacebar: [0, -20, 90],
-  shift: [0, -40, 60],
+  shift: [0, 26, 72],
   backspace: [60, 40, 40],
   hood: [0, 30, 140],
   frame: [0, 0, 0],

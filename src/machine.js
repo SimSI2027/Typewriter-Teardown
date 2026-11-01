@@ -73,7 +73,9 @@ export function buildMachine() {
     for (const a of ASSEMBLIES) {
       // instanced assemblies light only the working instance (instance colour); the rest light as a whole
       const perInstance = a === 'keys' || a === 'levers' || a === 'linkage' || a === 'typebars';
-      mats.setGroupLook(MAT_OF(a), {opacity: op[a] ?? 1, accent: perInstance ? 0 : (ac[a] ?? 0) * (1 - (gh[a] ?? 0)), ghost: gh[a] ?? 0});
+      // large castings take a gentler accent so a moving carriage reads as warm, not as a brass block
+      const weight = a === 'carriage' || a === 'platen' || a === 'frame' ? 0.35 : 1;
+      mats.setGroupLook(MAT_OF(a), {opacity: op[a] ?? 1, accent: perInstance ? 0 : (ac[a] ?? 0) * weight * (1 - (gh[a] ?? 0)), ghost: gh[a] ?? 0});
     }
     // fully cut assemblies are hidden (no draw at all)
     for (const n of nodes.frameSides) n.visible = (op.frameSides ?? 1) > 0.02;

@@ -9,10 +9,11 @@ import {Pass} from 'three/addons/postprocessing/Pass.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 
 export const BG = {top: '#f5f2ea', mid: '#eeeae0', low: '#e6e1d5'};
+// shadowEvery: redraw the shadow map every n-th frame (moving parts' shadows lag one frame, invisibly)
 export const TIERS = {
-  high: {label: 'HIGH', samples: 8, ao: true, shadow: 4096, pr: 2},
-  balanced: {label: 'BALANCED', samples: 4, ao: false, shadow: 2048, pr: 1.5},
-  low: {label: 'LOW', samples: 2, ao: false, shadow: 1024, pr: 1},
+  high: {label: 'HIGH', samples: 8, ao: true, shadow: 4096, pr: 2, shadowEvery: 1},
+  balanced: {label: 'BALANCED', samples: 4, ao: false, shadow: 2048, pr: 1.25, shadowEvery: 2},
+  low: {label: 'LOW', samples: 2, ao: false, shadow: 1024, pr: 1, shadowEvery: 3},
 };
 const D2R = Math.PI / 180;
 
@@ -22,7 +23,8 @@ export function createStage(canvas, machine, {capture = false} = {}) {
   renderer.toneMappingExposure = 1.0;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.VSMShadowMap;
+  // one shadow type for every tier, so a tier change never recompiles a program
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
   const scene = new THREE.Scene();
   {
@@ -92,8 +94,7 @@ export function createStage(canvas, machine, {capture = false} = {}) {
   sun.castShadow = true;
   Object.assign(sun.shadow.camera, {left: -0.55, right: 0.55, top: 0.55, bottom: -0.55, near: 0.5, far: 6});
   sun.shadow.mapSize.set(4096, 4096);
-  sun.shadow.radius = 10;
-  sun.shadow.blurSamples = 20;
+  sun.shadow.radius = 4;
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.0015;
   scene.add(sun, sun.target);
@@ -135,8 +136,12 @@ export function createStage(canvas, machine, {capture = false} = {}) {
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld();
   };
+  let shadowEvery = 1;
+  let nFrame = 0;
+  renderer.shadowMap.autoUpdate = false;
   const frame = (cam) => {
     placeCamera(cam);
+    renderer.shadowMap.needsUpdate = capture || nFrame++ % shadowEvery === 0;
     composer.render();
   };
   const pv = new THREE.Vector3();
@@ -158,8 +163,8 @@ export function createStage(canvas, machine, {capture = false} = {}) {
     sun.shadow.mapSize.set(q.shadow, q.shadow);
     sun.shadow.map?.dispose();
     sun.shadow.map = null;
-    sun.shadow.radius = q.shadow >= 4096 ? 10 : q.shadow >= 2048 ? 6 : 3;
-    renderer.shadowMap.type = q.shadow >= 2048 ? THREE.VSMShadowMap : THREE.PCFShadowMap;
+    sun.shadow.radius = q.shadow >= 4096 ? 4 : q.shadow >= 2048 ? 3 : 2;
+    shadowEvery = q.shadowEvery;
     return q;
   };
   return {renderer, scene, camera, composer, gtao, sun, resize, frame, placeCamera, projectWorld, size, setQuality, get tier() {
