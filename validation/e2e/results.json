@@ -1,21 +1,21 @@
 {
- "date": "2026-11-01T23:29:51.169Z",
- "base": "http://127.0.0.1:55246/Typewriter-Teardown/",
+ "date": "2026-11-01T23:37:23.617Z",
+ "base": "https://simsi2027.github.io/Typewriter-Teardown/",
  "results": [
   {
    "name": "loads under the Pages base path with the tour running, no errors",
    "ok": true,
-   "ms": 111
+   "ms": 109
   },
   {
    "name": "bundle has no local-path dependencies and the entry HTML is small",
    "ok": true,
-   "ms": 2
+   "ms": 0
   },
   {
    "name": "a click hands the machine to the visitor; the tour paper carries over",
    "ok": true,
-   "ms": 1848
+   "ms": 1849
   },
   {
    "name": "physical typing prints at the carriage position; space, backspace, return",
@@ -25,42 +25,42 @@
   {
    "name": "shift (held) prints upper case through carriage shift; caps lock locks it",
    "ok": true,
-   "ms": 1168
+   "ms": 1167
   },
   {
    "name": "unsupported characters fail safely",
    "ok": true,
-   "ms": 405
+   "ms": 416
   },
   {
    "name": "clicking the visible typewriter keys types them",
    "ok": true,
-   "ms": 1994
+   "ms": 2016
   },
   {
    "name": "every subsystem button isolates its assembly; reassemble restores",
    "ok": true,
-   "ms": 5302
+   "ms": 5422
   },
   {
    "name": "every camera button moves to its view",
    "ok": true,
-   "ms": 2640
+   "ms": 2626
   },
   {
    "name": "x-ray and cutaway toggle",
    "ok": true,
-   "ms": 1818
+   "ms": 1839
   },
   {
    "name": "machine buttons: return, spacing, ribbon colour, lock",
    "ok": true,
-   "ms": 2556
+   "ms": 2562
   },
   {
    "name": "pause, resume, step, slow motion, speed, timeline scrub",
    "ok": true,
-   "ms": 749
+   "ms": 735
   },
   {
    "name": "reset clears the sheet and returns the carriage",
@@ -70,27 +70,27 @@
   {
    "name": "sound: mute toggles, volume slider",
    "ok": true,
-   "ms": 206
+   "ms": 208
   },
   {
    "name": "panels hide and show (button and Esc)",
    "ok": true,
-   "ms": 106
+   "ms": 108
   },
   {
    "name": "all quality modes render without errors",
    "ok": true,
-   "ms": 2465
+   "ms": 2481
   },
   {
    "name": "orbit and zoom",
    "ok": true,
-   "ms": 466
+   "ms": 464
   },
   {
    "name": "tour button and chip restart the tour; inactivity resumes it, never mid-drag",
    "ok": true,
-   "ms": 732
+   "ms": 743
   },
   {
    "name": "controls are keyboard accessible with visible focus",
@@ -105,37 +105,32 @@
   {
    "name": "layout laptop-1366 (1366×768): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 968
+   "ms": 1168
   },
   {
    "name": "layout laptop-1280 (1280×720): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 959
+   "ms": 974
   },
   {
    "name": "layout desktop-1080p (1920×1080): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1018
+   "ms": 1055
   },
   {
    "name": "layout phone-landscape (844×390): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1126
+   "ms": 1222
   },
   {
    "name": "layout phone-portrait (390×844): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1157
+   "ms": 1179
   },
   {
    "name": "reduced motion: the tour does not start by itself",
    "ok": true,
-   "ms": 846
-  },
-  {
-   "name": "also works at the site root (base-path independent assets)",
-   "ok": true,
-   "ms": 838
+   "ms": 896
   }
  ]
 }
