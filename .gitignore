@@ -1,0 +1,20 @@
+node_modules/
+dist/
+teardown-out/
+.cache/
+*.log
+playwright-report/
+test-results/
+validation/frames/
+validation/**/*-frames/
+validation/video/*.mp4
+validation/video/*.wav
+!validation/video/README.md
+__pycache__/
+*.pyc
+.env
+.DS_Store
+Thumbs.db
+
+# third-party reference photographs: local study material only, never committed or deployed
+references/
