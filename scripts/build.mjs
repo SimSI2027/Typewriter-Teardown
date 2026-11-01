@@ -80,7 +80,8 @@ const html = `<!doctype html>
 <style>
 @font-face{font-family:'Inter';font-weight:100 900;font-style:normal;font-display:block;src:url(assets/inter.woff2) format('woff2')}
 @font-face{font-family:'JetBrains Mono';font-weight:500;font-style:normal;font-display:block;src:url(assets/jbmono-500.woff2) format('woff2')}
-html,body{margin:0;height:100%;background:#eeeae0;overflow:hidden}
+html,body{margin:0;width:100%;height:100%;background:#eeeae0;overflow:hidden;overscroll-behavior:none}
+body{position:fixed;inset:0}
 #app{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0}
 #gl{position:absolute;inset:0;width:1600px;height:900px;display:block}
 #boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:600 11px/1 Inter,system-ui,sans-serif;letter-spacing:2px;color:#8a857a;text-transform:uppercase}

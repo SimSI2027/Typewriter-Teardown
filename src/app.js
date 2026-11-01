@@ -200,6 +200,7 @@ export function createApp({capture = false} = {}) {
       cursor,
       heavy: F.heavy,
     });
+    frame.lastState = {s, S};
     return {s, v};
   }
 
@@ -222,5 +223,12 @@ export function createApp({capture = false} = {}) {
     }
     return h;
   }
-  return {machine, st, ui, frame, anchor, PITCH, PAPER};
+  /** screen point of a key cap (tests, accessibility helpers) */
+  const keyScreen = (k) => st.projectWorld(world(machine.parts.keys.rowNodes[k.row], [k.x, k.y, k.z]));
+  const partScreen = (name) => {
+    const s = frame.lastState;
+    const w = s ? anchor(name, s.s, s.S) : null;
+    return w ? st.projectWorld(w) : null;
+  };
+  return {machine, st, ui, frame, anchor, keyScreen, partScreen, PITCH, PAPER};
 }

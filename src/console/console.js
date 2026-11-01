@@ -65,8 +65,9 @@ export function createConsole(app) {
     return n;
   };
   const btn = {};
-  const mkBtn = (key, label, x, y, w, extra = '') => {
-    const b = el(`<button class="tb pnl" style="left:${x}px;top:${y}px;width:${w}px;${extra}" aria-label="${label}">${label}</button>`);
+  // the accessible name is the visible text; camera and subsystem buttons that share a word get a distinct name
+  const mkBtn = (key, label, x, y, w, extra = '', aria = '') => {
+    const b = el(`<button class="tb pnl" type="button" style="left:${x}px;top:${y}px;width:${w}px;${extra}"${aria ? ` aria-label="${aria}"` : ''}>${label}</button>`);
     ui.appendChild(b);
     btn[key] = b;
     return b;
@@ -173,7 +174,7 @@ export function createConsole(app) {
         x = RX + 11;
         y += 24;
       }
-      mkBtn('cam_' + k, k.toUpperCase(), x, y, w);
+      mkBtn('cam_' + k, k.toUpperCase(), x, y, w, '', `Camera ${k}`);
       x += w + 4;
     }
   }
@@ -198,7 +199,7 @@ export function createConsole(app) {
       const r = Math.floor(i / perRow);
       const j = i % perRow;
       const w = (W - (perRow - 1) * 5) / perRow;
-      mkBtn(k, label, x0 + j * (w + 5), 812 + r * 26, w);
+      mkBtn(k, label, x0 + j * (w + 5), 812 + r * 26, w, '', `Subsystem ${label.toLowerCase()}`);
     });
   }
   const hint = pnl(`<div class="cp" style="position:absolute;left:318px;width:960px;top:870px;text-align:center;font-weight:500;color:${C.faint}">TYPE ON YOUR KEYBOARD &nbsp;·&nbsp; CLICK THE KEYS &nbsp;·&nbsp; ENTER RETURNS &nbsp;·&nbsp; DRAG TO ORBIT &nbsp;·&nbsp; SCROLL TO ZOOM &nbsp;·&nbsp; ESC HIDES PANELS</div>`);

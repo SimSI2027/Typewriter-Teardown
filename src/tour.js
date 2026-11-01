@@ -8,30 +8,30 @@ import {createSession, typeText} from './model.js';
 // beats: {t, click?: button key, view?: {...}, type?: text, speed?: number, press?: anchor}
 export const BEATS = [
   {t: 0.0, view: {cam: 'hero'}, speed: 1.0},
-  {t: 0.45, speed: 1.7, type: 'Now is the time', cursor: 'rest'},
-  {t: 3.95, click: 'sub_linkage', view: {sub: 'linkage'}, speed: 1.0, type: ' '},
-  {t: 5.15, speed: 0.18, type: 'f', press: 'key'},
-  {t: 7.2, click: 'sub_basket', view: {sub: 'basket'}, speed: 1.0},
-  {t: 8.35, speed: 0.22, type: 'o', press: 'key'},
-  {t: 10.0, click: 'sub_impact', view: {sub: 'impact'}, speed: 1.0},
-  {t: 11.15, speed: 0.15, type: 'r', press: 'key'},
-  {t: 13.55, click: 'sub_escapement', view: {sub: 'escapement'}, speed: 1.0},
-  {t: 14.7, speed: 0.3, type: ' a', press: 'key'},
-  {t: 16.75, click: 'sub_ribbonFeed', view: {sub: 'ribbonFeed'}, speed: 1.0},
-  {t: 17.85, speed: 0.55, type: 'l'},
-  {t: 18.7, click: 'sub_shift', view: {sub: 'shift'}, speed: 1.0},
-  {t: 19.8, speed: 0.62, type: 'l G', press: 'shift'},
-  {t: 21.95, click: 'sub_bell', view: {sub: 'bell'}, speed: 1.0},
-  {t: 22.6, speed: 9.0, type: 'ood men to come to the aid o'},
-  {t: 23.72, speed: 1.1},
-  {t: 24.08, type: 'f the'},
-  {t: 25.8, click: 'sub_ret', view: {sub: 'ret'}, speed: 1.0},
-  {t: 26.85, speed: 0.6, type: '\n', press: 'lever'},
-  {t: 28.95, click: 'sub_explode', view: {sub: 'explode'}, speed: 1.0},
-  {t: 31.15, click: 'reassemble', view: {sub: 'reassemble', cam: 'hero'}, speed: 1.0},
-  {t: 32.55, speed: 1.4, type: 'country.'},
+  {t: 0.35, speed: 2.1, type: 'Now is the time'},
+  {t: 3.15, click: 'sub_linkage', view: {sub: 'linkage'}, speed: 1.0, type: ' '},
+  {t: 4.3, speed: 0.2, type: 'f', press: 'key'},
+  {t: 6.55, click: 'sub_basket', view: {sub: 'basket'}, speed: 1.0},
+  {t: 7.7, speed: 0.24, type: 'o', press: 'key'},
+  {t: 9.6, click: 'sub_impact', view: {sub: 'impact'}, speed: 1.0},
+  {t: 10.75, speed: 0.15, type: 'r', press: 'key'},
+  {t: 13.5, click: 'sub_escapement', view: {sub: 'escapement'}, speed: 1.0},
+  {t: 14.65, speed: 0.32, type: ' a', press: 'key'},
+  {t: 16.95, click: 'sub_ribbonFeed', view: {sub: 'ribbonFeed'}, speed: 1.0},
+  {t: 18.05, speed: 0.55, type: 'l'},
+  {t: 19.15, click: 'sub_shift', view: {sub: 'shift'}, speed: 1.0},
+  {t: 20.25, speed: 0.62, type: 'l G', press: 'shift'},
+  {t: 22.85, click: 'sub_bell', view: {sub: 'bell'}, speed: 1.0},
+  {t: 23.45, speed: 9.0, type: 'ood men to come to the aid o'},
+  {t: 24.75, speed: 1.1},
+  {t: 25.1, type: 'f the'},
+  {t: 26.75, click: 'sub_ret', view: {sub: 'ret'}, speed: 1.0},
+  {t: 27.8, speed: 0.6, type: '\n', press: 'lever'},
+  {t: 30.2, click: 'sub_explode', view: {sub: 'explode'}, speed: 1.0},
+  {t: 32.3, click: 'reassemble', view: {sub: 'reassemble', cam: 'hero'}, speed: 1.0},
+  {t: 33.55, speed: 1.9, type: 'country.'},
 ];
-export const DURATION = 35.0;
+export const DURATION = 35.5;
 const RAMP = 0.3;
 
 // ------------------------------------------------------------ playback speed and machine time τ(t)
@@ -75,7 +75,8 @@ export function buildTourSession() {
   const presses = [];
   for (const b of BEATS) {
     if (!b.type) continue;
-    const t0 = tauAt(b.t);
+    // a slow-motion beat starts its keystroke only once the speed ramp has settled
+    const t0 = tauAt(b.t + (b.speed != null && b.t > 0 ? RAMP + 0.05 : 0));
     const before = S.acts.length;
     typeText(S, b.type, Math.max(t0, S.end));
     // remember which actions this beat started (for the cursor to press)

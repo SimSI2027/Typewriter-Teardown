@@ -567,6 +567,11 @@ export async function runLive() {
     },
     takeOver,
     startTour,
+    keyScreen: (id) => app.keyScreen(typeof id === 'number' ? CHAR_KEYS[id] : FN_KEYS.find((k) => k.id === id)),
+    partScreen: (n) => app.partScreen(n),
+    get scale() {
+      return scale;
+    },
     FN_KEYS,
     CHAR_KEYS,
   };
