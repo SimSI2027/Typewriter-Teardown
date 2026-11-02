@@ -56,6 +56,16 @@ export async function runFilm() {
     preview(t, v) {
       app.frame({S, tau: tauAt(t), viewEvents: [{t: -99, ...v}], viewT: 99, cursor: null, ui: {sliders: {}, panels: true, tour: false}});
     },
+    /** validation: the tour's machine at tour time t under a list of view events, seen at view time viewT
+     *  (scrubs a view transition: events [{t:-99, ...from}, {t:0, ...to}], viewT = seconds since the change) */
+    view(t, events, viewT, cam) {
+      const camOverride = cam ? (c) => ({...c, sx: 0, sy: 0, ...cam}) : undefined;
+      app.frame({S, tau: tauAt(t), viewEvents: events, viewT, camOverride, cursor: null, ui: {sliders: {}, panels: !cam, tour: false}});
+    },
+    /** validation: world-space boxes of every mesh (per instance for instanced meshes), grouped by assembly */
+    boxes() {
+      return app.boxes();
+    },
     cues,
     async renderAudio() {
       const bytes = await renderOffline(cues(), DURATION);

@@ -1,0 +1,48 @@
+boxes 514
+== linkage: 84
+   2.1 mm  x42  levers/levers:Box#* <> linkage/linkage:Box#*
+   1.6 mm  x42  levers/levers:Box#* <> linkage/linkage:Cylinder#*
+== basket: 4
+   3.6 mm  x2  frame/frame:Extrude@0,197,0 <> segment/segment:Extrude@0,190,10
+   1.9 mm  x1  segment/segment:Extrude@0,169,10 <> ubar/:Extrude@0,172,-15
+   1.5 mm  x1  ubar/ubar:Box@0,149,-114 <> escapement/:Extrude@0,143,-120
+== impact: 0
+== ribbonLift: 0
+== ribbonFeed: 9
+   4.4 mm  x2  ribbon/:Cylinder@-165,256,57 <> return/:Extrude@-159,251,57
+   2.5 mm  x2  ribbon/:Cylinder@-165,256,57 <> return/:Extrude@-142,250,21
+   1.8 mm  x1  vibrator/vibrator:Box@0,248,6 <> platen/platen:Cylinder@33,250,3
+   1.8 mm  x1  ribbon/:Cylinder@-165,257,57 <> return/:Extrude@-159,251,57
+   1.5 mm  x1  ribbon/:Extrude@-165,249,57 <> return/:Extrude@-142,250,21
+   1.5 mm  x1  ribbon/ribbon:Buffer@0,47,17 <> return/:Extrude@-142,250,21
+   1.4 mm  x1  ribbon/:Extrude@-165,249,57 <> return/:Extrude@-159,251,57
+== ubar: 4
+   13.0 mm  x3  linkage/linkage:Cylinder#* <> ubar/:Extrude@0,171,-18
+   4.5 mm  x1  ubar/ubar:Box@0,148,-117 <> escapement/:Extrude@0,143,-120
+== escapement: 1
+   1.0 mm  x1  frame/frame:Box@0,150,-144 <> escapement/:Box@0,142,-145
+== carriage: 0
+== mainspring: 0
+== shift: 0
+== backspace: 1
+   3.3 mm  x1  backspace/backspace:Cylinder@90,119,-78 <> ubar/ubar:Box@63,172,-39
+== bell: 1
+   1.4 mm  x1  carriage/carriage:Extrude@33,216,-138 <> bell/:Box@-49,210,-140
+== ret: 0
+== spacing: 0
+== platen: 0
+== explode: 55
+   14.2 mm  x1  frame/frame:Box@0,197,-24 <> shift/shift:Cylinder@-176,145,-20
+   14.2 mm  x1  frame/frame:Box@0,197,-24 <> shift/shift:Cylinder@176,145,-20
+   7.9 mm  x1  frame/frame:Cylinder@-172,8,214 <> spacebar/spacebar:Cylinder@0,6,222
+   7.9 mm  x1  frame/frame:Cylinder@172,8,214 <> spacebar/spacebar:Cylinder@0,6,222
+   5.7 mm  x1  frame/frame:Extrude@0,0,0 <> spacebar/spacebar:Cylinder@126,83,107
+   5.1 mm  x2  frame/frame:Extrude@0,197,0 <> segment/segment:Extrude@0,203,40
+   3.4 mm  x11  hood/hood:Extrude@0,30,272 <> keys/keyrow1:Lathe#*
+   3.2 mm  x11  hood/hood:Extrude@0,30,272 <> keys/keyrow1:Circle#*
+   2.9 mm  x1  frame/frame:Box@0,150,-144 <> ubar/ubar:Box@-63,148,-99
+   2.9 mm  x1  frame/frame:Box@0,150,-144 <> ubar/ubar:Box@63,148,-99
+   2.5 mm  x1  shift/shift:Cylinder@176,145,-20 <> backspace/backspace:Box@175,80,81
+   2.2 mm  x11  hood/hood:Plane@0,190,277 <> keys/keyrow1:Lathe#*
+   2.0 mm  x11  hood/hood:Plane@0,190,277 <> keys/keyrow1:Circle#*
+   1.1 mm  x1  frame/frame:Box@0,19,37 <> spacebar/spacebar:Cylinder@126,83,107

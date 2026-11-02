@@ -230,5 +230,32 @@ export function createApp({capture = false} = {}) {
     const w = s ? anchor(name, s.s, s.S) : null;
     return w ? st.projectWorld(w) : null;
   };
-  return {machine, st, ui, frame, anchor, keyScreen, partScreen, PITCH, PAPER};
+  /** validation: world boxes (mm) of every visible mesh, per instance for instanced meshes, grouped by assembly */
+  const boxes = () => {
+    machine.root.updateMatrixWorld(true);
+    const out = {};
+    const B = new THREE.Box3();
+    const M = new THREE.Matrix4();
+    const mm = (b, name, id) => [b.min.x * 1000, b.min.y * 1000, b.min.z * 1000, b.max.x * 1000, b.max.y * 1000, b.max.z * 1000, name, id];
+    for (const [a, list] of Object.entries(nodes)) {
+      const arr = (out[a] = []);
+      for (const n of list)
+        n.traverseVisible((o) => {
+          if (!o.isMesh || !o.geometry) return;
+          if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+          if (o.isInstancedMesh) {
+            for (let i = 0; i < o.count; i++) {
+              o.getMatrixAt(i, M);
+              B.copy(o.geometry.boundingBox).applyMatrix4(M.premultiply(o.matrixWorld));
+              arr.push(mm(B, `${o.name || "inst"}#${i}`, `${o.id}#${i}`));
+            }
+          } else {
+            B.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);
+            arr.push(mm(B, o.name || o.parent?.name || "", String(o.id)));
+          }
+        });
+    }
+    return out;
+  };
+  return {machine, st, ui, frame, anchor, keyScreen, partScreen, boxes, PITCH, PAPER};
 }

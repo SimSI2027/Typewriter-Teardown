@@ -240,6 +240,7 @@ export function buildCarriage(mats, nodes) {
   sheet.castShadow = true;
   sheet.receiveShadow = true;
   sheet.frustumCulled = false;
+  sheet.userData.noCollide = true; // a curved strip: its box says nothing about contact (tests)
   paG.add(sheet);
   // paper left edge in carriage coordinates
   const paperX0 = (PAPER.leftEdgeCol - 42) * PITCH - PITCH / 2;
