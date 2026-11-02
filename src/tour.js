@@ -28,10 +28,10 @@ export const BEATS = [
   {t: 26.75, click: 'sub_ret', view: {sub: 'ret'}, speed: 1.0},
   {t: 27.8, speed: 0.6, type: '\n', press: 'lever'},
   {t: 30.2, click: 'sub_explode', view: {sub: 'explode'}, speed: 1.0},
-  {t: 32.3, click: 'reassemble', view: {sub: 'reassemble', cam: 'hero'}, speed: 1.0},
-  {t: 33.55, speed: 1.9, type: 'country.'},
+  {t: 33.3, click: 'reassemble', view: {sub: 'reassemble', cam: 'hero'}, speed: 1.0}, // the staged explode holds ≥ 1.8 s
+  {t: 34.55, speed: 1.9, type: 'country.'},
 ];
-export const DURATION = 35.5;
+export const DURATION = 36.5;
 const RAMP = 0.3;
 
 // ------------------------------------------------------------ playback speed and machine time τ(t)

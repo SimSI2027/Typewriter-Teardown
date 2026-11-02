@@ -7,7 +7,7 @@ schematic read that same model.
 
 **Live demo:** https://simsi2027.github.io/Typewriter-Teardown/
 
-The tour can also be rendered to a deterministic 35 s 1080p60 video with sound (`npm run video`; see below).
+The tour can also be rendered to a deterministic 36.5 s 1080p60 video with sound (`npm run video`; see below).
 
 ![Underwood No. 5 teardown simulator](public/social-preview.png)
 
@@ -25,8 +25,9 @@ machine; after 25 s of quiet the tour resumes.
 - **Console:** live column, readouts (key travel, typebar angle and speed, ribbon lift, universal bar, escapement phase,
   carriage travel, mainspring tension, platen angle, line, shift, margin, ribbon feed), the line on the paper, a
   key-to-strike chart, a carriage-and-escapement chart, and a side-section schematic with an escapement inset.
-- **16 subsystem views** (isolate, cut away, explode along service directions), X-ray, cutaway, reassemble, 13 cameras,
-  callouts with leaders that follow their parts.
+- **16 subsystem views** (isolate, cut away, explode along staged service paths — parts wait for the ones in front of
+  them and leave their mounts before they slide; every pose and the way there is interference-tested on the real
+  geometry), X-ray, cutaway, reassemble, 13 cameras, callouts with leaders that follow their parts.
 - **Sound:** synthesised mechanical sounds, each scheduled from the action that moves the part.
 - **Quality:** AUTO / HIGH / BALANCED / LOW (MSAA, GTAO, shadow-map size, pixel-ratio cap; AUTO steps down on slow GPUs).
 
@@ -54,11 +55,14 @@ npm test           # model unit tests (node:test)
 npm run test:e2e   # Playwright tests against the production build
 npm run validate   # beat stills, contact sheet, views sheet, 0.2 s transition scrubs → validation/
 npm run video      # deterministic 1920×1080 60 fps H.264 tour with sound → validation/video/
+node scripts/collide.mjs   # interference report of every subsystem pose (headless, real geometry)
+node scripts/audit.mjs --out validation/audit/after   # audit stills, sheets, transition scrubs
 ```
 
 Source layout, rules and the testing policy are in [CLAUDE.md](CLAUDE.md). Sources and the VERIFIED / ESTIMATED /
 SIMPLIFIED classification of every dimension: [docs/SOURCES.md](docs/SOURCES.md),
-[docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md). Validation results: [docs/VALIDATION.md](docs/VALIDATION.md).
+[docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md). Validation results: [docs/VALIDATION.md](docs/VALIDATION.md). The 2026-11 audit: [docs/audit/LEDGER.md](docs/audit/LEDGER.md),
+[docs/audit/FINAL_REPORT.md](docs/audit/FINAL_REPORT.md).
 
 ## Deployment
 

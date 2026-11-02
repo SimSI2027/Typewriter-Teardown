@@ -1,136 +1,156 @@
 {
- "date": "2026-11-01T23:37:23.617Z",
- "base": "https://simsi2027.github.io/Typewriter-Teardown/",
+ "date": "2026-11-02T04:14:18.627Z",
+ "base": "http://127.0.0.1:51057/Typewriter-Teardown/",
  "results": [
   {
    "name": "loads under the Pages base path with the tour running, no errors",
    "ok": true,
-   "ms": 109
+   "ms": 119
   },
   {
    "name": "bundle has no local-path dependencies and the entry HTML is small",
    "ok": true,
-   "ms": 0
+   "ms": 1
   },
   {
    "name": "a click hands the machine to the visitor; the tour paper carries over",
    "ok": true,
-   "ms": 1849
+   "ms": 1852
   },
   {
    "name": "physical typing prints at the carriage position; space, backspace, return",
    "ok": true,
-   "ms": 1592
+   "ms": 1604
   },
   {
    "name": "shift (held) prints upper case through carriage shift; caps lock locks it",
    "ok": true,
-   "ms": 1167
+   "ms": 1166
   },
   {
    "name": "unsupported characters fail safely",
    "ok": true,
-   "ms": 416
+   "ms": 411
   },
   {
    "name": "clicking the visible typewriter keys types them",
    "ok": true,
-   "ms": 2016
+   "ms": 1989
+  },
+  {
+   "name": "a mouse-clicked console button keeps no focus: Space and Enter still reach the typewriter (D-01)",
+   "ok": true,
+   "ms": 1117
   },
   {
    "name": "every subsystem button isolates its assembly; reassemble restores",
    "ok": true,
-   "ms": 5422
+   "ms": 5378
   },
   {
    "name": "every camera button moves to its view",
    "ok": true,
-   "ms": 2626
+   "ms": 2679
   },
   {
    "name": "x-ray and cutaway toggle",
    "ok": true,
-   "ms": 1839
+   "ms": 1817
   },
   {
    "name": "machine buttons: return, spacing, ribbon colour, lock",
    "ok": true,
-   "ms": 2562
+   "ms": 2809
   },
   {
    "name": "pause, resume, step, slow motion, speed, timeline scrub",
    "ok": true,
-   "ms": 735
+   "ms": 750
   },
   {
    "name": "reset clears the sheet and returns the carriage",
    "ok": true,
-   "ms": 418
+   "ms": 422
   },
   {
    "name": "sound: mute toggles, volume slider",
    "ok": true,
-   "ms": 208
+   "ms": 205
   },
   {
    "name": "panels hide and show (button and Esc)",
    "ok": true,
-   "ms": 108
+   "ms": 92
   },
   {
    "name": "all quality modes render without errors",
    "ok": true,
-   "ms": 2481
+   "ms": 2497
   },
   {
    "name": "orbit and zoom",
    "ok": true,
-   "ms": 464
+   "ms": 483
   },
   {
    "name": "tour button and chip restart the tour; inactivity resumes it, never mid-drag",
    "ok": true,
-   "ms": 743
+   "ms": 735
+  },
+  {
+   "name": "taking over in the middle of a tour view change continues it without a jump (D-07)",
+   "ok": true,
+   "ms": 464
+  },
+  {
+   "name": "callout labels stay between the side panels in every view (D-08)",
+   "ok": true,
+   "ms": 52598
   },
   {
    "name": "controls are keyboard accessible with visible focus",
    "ok": true,
-   "ms": 1
+   "ms": 3
   },
   {
    "name": "no console errors or failed requests during the session",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "name": "layout laptop-1366 (1366×768): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1168
+   "ms": 970
   },
   {
    "name": "layout laptop-1280 (1280×720): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 974
+   "ms": 931
   },
   {
    "name": "layout desktop-1080p (1920×1080): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1055
+   "ms": 991
   },
   {
    "name": "layout phone-landscape (844×390): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1222
+   "ms": 1171
   },
   {
    "name": "layout phone-portrait (390×844): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1179
+   "ms": 1128
   },
   {
-   "name": "reduced motion: the tour does not start by itself",
+   "name": "reduced motion: the tour does not start by itself, not even after 25 s of quiet (D-05)",
    "ok": true,
-   "ms": 896
+   "ms": 1274
+  },
+  {
+   "name": "also works at the site root (base-path independent assets)",
+   "ok": true,
+   "ms": 918
   }
  ]
 }

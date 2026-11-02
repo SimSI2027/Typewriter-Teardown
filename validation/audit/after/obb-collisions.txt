@@ -1,0 +1,17 @@
+boxes 513
+== linkage: 0
+== basket: 0
+== impact: 0
+== ribbonLift: 0
+== ribbonFeed: 0
+== ubar: 0
+== escapement: 0
+== carriage: 0
+== mainspring: 0
+== shift: 0
+== backspace: 0
+== bell: 0
+== ret: 0
+== spacing: 0
+== platen: 0
+== explode: 0

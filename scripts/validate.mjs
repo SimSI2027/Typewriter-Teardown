@@ -43,6 +43,8 @@ const range = (a, b, step = 0.2) => {
 const D = info.duration;
 // 1. beat contact sheet (0.9 s after every beat, when the view has settled)
 await sheet('contact-sheet', [0, ...info.beats.map((b) => Math.min(D - 0.01, b + 0.9))], 4);
+// 1b. the slow-motion strike of "r" around impact (11.92 s), every 0.05 s
+await sheet('impact-sheet', range(11.7, 12.25, 0.05), 4);
 // 2. full tour at 0.2 s, in sheets of 40 frames
 const all = range(0, D - 0.05);
 for (let i = 0, k = 1; i < all.length; i += 40, k++) await sheet(`scrub-${String(k).padStart(2, '0')}`, all.slice(i, i + 40), 8);

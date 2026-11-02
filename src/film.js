@@ -34,7 +34,7 @@ export async function runFilm() {
         tour: true,
         sliders: {
           speed: {k: Math.min(1, sp / 2), text: speedText(sp)},
-          time: {k: t / DURATION, text: `${t.toFixed(1)} / ${DURATION.toFixed(0)} S`},
+          time: {k: t / DURATION, text: `${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`},
           vol: {k: 0.7, text: '70 %'},
         },
         viewSub: '',

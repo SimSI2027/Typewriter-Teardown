@@ -113,4 +113,41 @@ and 100 % of its teardown (the way out, not only the end pose), tolerance 1 mm.
 |---|---|---|---|---|---|---|---|
 | D-20 | MEDIUM | Geometry | Once the paper table was turned the right way (D-02) its decal sat 0.9 mm above the paper lying on it and printed over the sheet. | hero still during repair | table seated 4 mm under the paper path along its normal | unit D-02 + stills | **fixed** |
 | D-21 | LOW | Sound | Return made no sound in the earlier probe — not a sound fault: the focused button swallowed Enter (D-01). After D-01 a return creates 30 voices. | `before/` vs `after/liveprobe.json` | D-01 | e2e D-01 | **fixed (by D-01)** |
-| D-22 | LOW | Geometry | Rest-pose clearances measured but not changed: the right ribbon spool cup reaches ~3 mm into the side frame's top edge; the carriage's front scale passes over the right spool's flange within ~1 mm. Visible only in extreme close-ups. | oriented-box rest audit | — | — | **deferred**: moving the spools inward would put them in the swing of the outer typebars (checked by the existing spool-clearance test); revisit with a spool-cover redesign |
+| D-22 | LOW | Geometry | Rest-pose clearances measured but not changed: the right ribbon spool cup reaches ~3 mm into the side frame's top edge; the carriage's front scale passes over the right spool's flange within ~1 mm. Visible only in extreme close-ups. | oriented-box rest audit | — | — | **deferred**: tried — `spoolX` 155 (needed to clear the frame) fails the existing slug-clearance test (outer typebars hit the spools); 160 passes but still leaves 4 mm. Needs a spool-cup redesign, not a number |
+| D-23 | LOW | Console | The tour timeline label rounded the duration (35.5 → "36", 36.5 → "37"). | social preview during repair | one decimal | stills | **fixed** |
+
+## 6. Enhancements (after every CRITICAL/HIGH item was fixed and verified)
+
+| ID | Area | Change | Evidence | Disposition |
+|---|---|---|---|---|
+| E-01 | Tour pacing | FULL EXPLODE now holds 1.8 s settled (was 0.85 s) before reassembly: the last two beats move +1 s, tour 35.5 → 36.5 s. The staged explode needs its full 1.25 s transition to read. | `validation/contact-sheet.png`, `validation/scrub-05.png` | **done** |
+| E-02 | Teardown | Staged explode paths (assembly order, release-then-slide) — the mechanism behind D-03/D-04, reusable for any view. | §4 | **done** |
+| E-03 | Validation | Reproducible audit tooling: `scripts/audit.mjs`, `scripts/collide.mjs`, `scripts/compare.mjs`, impact sheet in `scripts/validate.mjs`, headless geometry tests. | this ledger | **done** |
+| E-04 | Social preview | `public/social-preview.png` re-rendered from the current build (it showed the old hood decal and paper table). | file | **done** |
+
+## 7. Teardown acceptance (every subsystem button)
+
+Rule: the selected mechanism isolates or comes apart while the rest steps aside (ghosted, not hidden, except cut
+panels); no colour-only or camera-only views; no scatter; nothing passes through anything (tested at 25/50/75/100 %);
+reassembly exact (tested); the mechanism keeps operating (it is posed from the model state in every view — the
+action stills show keys, bars, ribbon, carriage and bell moving inside isolated views). Evidence: `after/subs.jpg`
+(isolate / x-ray / cutaway for each), `after/trans-<id>.jpg` (in and out at 0.2 s), `compare/` (before | after).
+
+| Button | What comes apart / steps aside | Isolate · x-ray · cutaway distinct | Interference (25–100 %) | Verdict |
+|---|---|---|---|---|
+| KEY LINKAGE | key rows lift off their levers in order; side panels slide out; rest ghosted | yes | 0 | pass |
+| TYPEBAR BASKET | bars fan on their segment; hood slides forward; rest ghosted | yes | 0 | pass |
+| IMPACT | hood cut; typebars, ribbon, vibrator, platen, paper kept; rest ghosted | yes | 0 | pass (isolate) |
+| RIBBON LIFT | hood cut; vibrator, ribbon, bars, platen, paper kept (no free path: < 1 mm clearances) | yes | 0 | pass (isolate) |
+| RIBBON FEED | spools and vibrator forward and up together, ribbon threaded | yes | 0 | pass |
+| UNIVERSAL BAR | hood and sides cut; bar, bars, segment, escapement, rack kept (interlocked: isolate) | yes | 0 | pass (isolate) |
+| ESCAPEMENT | train drops 4 mm off its mount, pinion out of the rack; rest ghosted | yes | 0 | pass |
+| CARRIAGE | vibrator steps down, carriage lifts off its rails and back | yes | 0 | pass |
+| MAINSPRING | drum moves out left and back; carriage kept | yes | 0 | pass |
+| SHIFT | sides cut; shift linkage, carriage, platen kept; subcarriage lift visible | yes | 0 | pass (isolate) |
+| BACKSPACE | backspace linkage out to the right; sides cut | yes | 0 | pass |
+| MARGIN BELL | bell and margin rack out left; sides cut | yes | 0 | pass |
+| CARRIAGE RETURN | return lever, carriage, platen kept; rest ghosted; re-aimed camera | yes | 0 | pass (isolate) |
+| LINE SPACING | return lever steps out left; platen and paper kept | yes | 0 | pass |
+| PLATEN | platen and paper lift out of the carriage; return lever steps up out of the way | yes | 0 | pass |
+| FULL EXPLODE | staged, in assembly order: hood, bars, ribbon, carriage stack, rails, bell, mainspring, backspace, keys; the key-lever skeleton, links, universal bar and escapement stay (captive) | n/a (all solid) | 0 | pass |

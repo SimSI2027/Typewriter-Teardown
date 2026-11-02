@@ -15,7 +15,8 @@ Every number lives in `src/params.js` with a tag.
 bell 7 spaces before the line lock; black = upper ribbon half, red = lower, stencil = no lift; 42 typebars, 42 keys,
 84 characters; ~252 mm platen; the escapement trip sequence; the pinion freewheels on return.
 
-**ESTIMATED** (consistent inference from photographs and proportions): frame 392 mm wide; key spacing 19.4 mm, key dip
+**ESTIMATED** (consistent inference from photographs and proportions): the hood decal (the name about 84 mm wide, centred under the
+basket arch, measured against the front reference photograph) and the paper table's position under the sheet; frame 392 mm wide; key spacing 19.4 mm, key dip
 14 mm, row heights; key-lever fulcrum and sublever positions; segment radius 60 mm, 45 mm below the printing line (so
 every typebar is 75 mm, equidistant from the printing point); rest angle −12°; 28-tooth line-space ratchet and platen
 radius 18.9 mm, chosen together so one tooth = 1/6 in; escapement wheel 36 teeth, pinion 12; shift travel 5 mm; ribbon
@@ -41,6 +42,14 @@ margins at columns 10 and 72.
 - *Paper.* One sheet of 54 usable lines; the feed rolls are drawn, but the sheet's position is the platen's arc length.
 - *Shift.* Shift keys → rocking shaft → a lift rod at each side raise the subcarriage 5 mm; the manual's lift frame and
   rails are abstracted.
+- *Type faces.* The characters on the slugs read correctly from the operator's side for legibility; real type faces
+  are reversed and face the platen.
+- *Teardown paths.* Exploded views are a didactic separation, not a service procedure. Paths are staged in
+  `params.EXPLODE` / `VIEW_EXPLODE` (a part waits for the ones in front of it, or leaves its mount before it
+  slides) and checked for interference on the real geometry at 25/50/75/100 % (`tests/model/geometry.test.js`).
+  Assemblies that the model shows captive stay with the frame: the key levers with their sublevers, links, space
+  bar, shift linkage and universal bar, and the escapement train (it drops 4 mm off its mount, out of the rack).
+- *Ribbon colour selector.* One control steps black → red → stencil (on the machine it is a three-position lever).
 
 ## The authoritative model
 

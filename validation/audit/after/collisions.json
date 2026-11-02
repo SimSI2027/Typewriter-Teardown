@@ -1,0 +1,151 @@
+{
+ "linkage": {
+  "count": 0,
+  "top": []
+ },
+ "basket": {
+  "count": 0,
+  "top": []
+ },
+ "impact": {
+  "count": 0,
+  "top": []
+ },
+ "ribbonLift": {
+  "count": 0,
+  "top": []
+ },
+ "ribbonFeed": {
+  "count": 2,
+  "top": [
+   {
+    "a": "ribbon/ribbon",
+    "b": "carriage/",
+    "pen": 6.7
+   },
+   {
+    "a": "ribbon/ribbon",
+    "b": "return/",
+    "pen": 6.7
+   }
+  ]
+ },
+ "ubar": {
+  "count": 0,
+  "top": []
+ },
+ "escapement": {
+  "count": 0,
+  "top": []
+ },
+ "carriage": {
+  "count": 8,
+  "top": [
+   {
+    "a": "segment/segment",
+    "b": "vibrator/vibrator",
+    "pen": 11.1
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/vibrator",
+    "pen": 8.5
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/vibrator",
+    "pen": 6.3
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/",
+    "pen": 4.8
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/",
+    "pen": 3.8
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/vibrator",
+    "pen": 3.5
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/",
+    "pen": 1.3
+   },
+   {
+    "a": "segment/segment",
+    "b": "vibrator/",
+    "pen": 1.3
+   }
+  ]
+ },
+ "mainspring": {
+  "count": 0,
+  "top": []
+ },
+ "shift": {
+  "count": 0,
+  "top": []
+ },
+ "backspace": {
+  "count": 0,
+  "top": []
+ },
+ "bell": {
+  "count": 1,
+  "top": [
+   {
+    "a": "frame/frame",
+    "b": "bell/bell",
+    "pen": 1.3
+   }
+  ]
+ },
+ "ret": {
+  "count": 0,
+  "top": []
+ },
+ "spacing": {
+  "count": 0,
+  "top": []
+ },
+ "platen": {
+  "count": 4,
+  "top": [
+   {
+    "a": "carriage/platen",
+    "b": "platen/paper",
+    "pen": 3.8
+   },
+   {
+    "a": "carriage/paper",
+    "b": "platen/platen",
+    "pen": 3.8
+   },
+   {
+    "a": "carriage/platen",
+    "b": "paper/paper",
+    "pen": 3.8
+   },
+   {
+    "a": "platen/platen",
+    "b": "paper/paper",
+    "pen": 3.8
+   }
+  ]
+ },
+ "explode": {
+  "count": 1,
+  "top": [
+   {
+    "a": "shift/shift",
+    "b": "bell/bell",
+    "pen": 25.5
+   }
+  ]
+ }
+}

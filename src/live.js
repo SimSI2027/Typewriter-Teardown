@@ -475,7 +475,7 @@ export async function runLive() {
           const c = tour.cursor(t, ui.spot, project);
           return ringK > c.ring ? {...c, ring: ringK, ringX: ring.x, ringY: ring.y} : c;
         },
-        ui: {paused: false, slow: cueRate < 0.7, muted: sound.muted, quality, panels, tour: true, sliders: sliderVals(cueRate, t / DURATION, `${t.toFixed(1)} / ${DURATION.toFixed(0)} S`), viewSub: viewSub()},
+        ui: {paused: false, slow: cueRate < 0.7, muted: sound.muted, quality, panels, tour: true, sliders: sliderVals(cueRate, t / DURATION, `${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`), viewSub: viewSub()},
       };
       // tour button clicks make the soft UI tick
       for (const c of CLICKS) if (c.t > t - dt && c.t <= t) sound.schedule([{kind: 'ui', gain: 1, pitch: 1, offset: 0}]);
