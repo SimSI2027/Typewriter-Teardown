@@ -38,7 +38,9 @@ export async function runFilm() {
           vol: {k: 0.7, text: '70 %'},
         },
         viewSub: '',
+        pauseLabel: 'PAUSE',
         sound: 'on',
+        status: {mode: 'tour', text: `TOUR · ${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`, main: 'PAUSE TOUR', restart: true},
       },
     });
   };

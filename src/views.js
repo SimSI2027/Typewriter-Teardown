@@ -131,12 +131,15 @@ export function blendCam(a, b, k) {
   return o;
 }
 export const TRANSITION = VIEW_T; // seconds for a view change
+/** the state-to-state easing every view change uses (exported for the resume blend) */
+export const easeView = (x) => ease(x);
 
 /**
  * The view at time t from a list of view events [{t, cam, sub, xray, cutaway}] (sorted). Each event may set any of
- * the fields; unset fields carry over. Returns {cam, look, camId, sub, xray, cutaway, k}.
+ * the fields; unset fields carry over. drift 0 holds every camera still (reduced motion). Returns {cam, look, camId, sub,
+ * xray, cutaway, k}.
  */
-export function viewAt(events, t, EXP, camOverride) {
+export function viewAt(events, t, EXP, camOverride, drift = 1) {
   // the implicit starting view, anchored to the first event (so shifting every event in time shifts it too)
   let cur = {cam: 'hero', sub: null, xray: false, cutaway: false, t: (events.length ? events[0].t : 0) - 1e9};
   // where the running transition starts from: a settled view (its camera keeps drifting), or — when a change arrived
@@ -145,10 +148,10 @@ export function viewAt(events, t, EXP, camOverride) {
   const lookOf = (v) => viewLook(v.sub, v);
   const stateAt = (at) => {
     const k = ease((at - cur.t) / TRANSITION);
-    const cb = camAt(cur.cam, at - cur.t);
+    const cb = camAt(cur.cam, at - cur.t, drift);
     if (k >= 1) return {k, look: lookOf(cur), cam: cb};
     const fl = from.v ? lookOf(from.v) : from.look;
-    const fc = from.v ? camAt(from.v.cam, at - from.v.t) : from.cam;
+    const fc = from.v ? camAt(from.v.cam, at - from.v.t, drift) : from.cam;
     return {k, look: blendLook(fl, lookOf(cur), k, EXP), cam: blendCam(fc, cb, k)};
   };
   for (const e of events) {

@@ -35,11 +35,24 @@ const CSS = `
 .sl em{position:absolute;left:0;top:10px;height:2px;background:${C.acc}}
 .cur{position:absolute;left:0;top:0;z-index:50;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));pointer-events:none}
 .ring{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid ${C.acc};opacity:0;z-index:49;pointer-events:none}
-.chip{position:absolute;left:800px;top:28px;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:22px;padding:0 12px;border:1px solid ${C.line};background:rgba(255,255,255,.95);color:${C.ink};font:600 8.8px Inter,sans-serif;letter-spacing:1.3px;white-space:nowrap;cursor:pointer;pointer-events:auto}
-.chip i{display:block;width:6px;height:6px;border-radius:50%;background:${C.acc}}
-.chip.on i{animation:blink 1.2s steps(2) infinite}
+.bar{position:absolute;left:800px;top:22px;transform:translateX(-50%);display:flex;align-items:stretch;gap:4px;height:24px;pointer-events:none;z-index:40}
+.bar .st{display:flex;align-items:center;justify-content:center;gap:8px;min-width:250px;padding:0 12px;border:1px solid ${C.line};background:rgba(255,255,255,.95);color:${C.ink};font:600 8.8px Inter,sans-serif;letter-spacing:1.3px;white-space:nowrap;box-sizing:border-box}
+.bar .st i{display:block;flex:none;width:6px;height:6px;border-radius:50%;background:${C.acc}}
+.bar .st.tour i{animation:blink 1.2s steps(2) infinite}
+.bar .st.paused i{border-radius:0;width:2px;height:7px;background:${C.ink};box-shadow:3px 0 0 ${C.ink};margin-right:3px}
+.bar .st.manual i,.bar .st.idle i{background:none;border:1.3px solid ${C.ink};width:4px;height:4px}
+.bar .st.idle i{border-color:${C.acc}}
+.bar .st.complete i{background:${C.ink}}
+.bar .tb{position:relative;left:auto;top:auto;height:24px;padding:0 12px;width:auto}
+.bar .tb.main{background:${C.ink};color:#fff;border-color:${C.ink}}
+.bar .tb.main:hover{background:#2c2d31}
+.bar .tb.snd-locked{border-color:${C.acc};color:${C.acc}}
+.bar .tb.snd-off{color:${C.mute}}
+.bar .tb[hidden]{display:none}
 @keyframes blink{50%{opacity:.15}}
-@media (prefers-reduced-motion: reduce){.chip.on i{animation:none}}
+@keyframes press{0%{box-shadow:0 0 0 0 rgba(176,122,34,.45)}100%{box-shadow:0 0 0 7px rgba(176,122,34,0)}}
+.tb.pressed{animation:press .45s cubic-bezier(.16,1,.3,1)}
+@media (prefers-reduced-motion: reduce){.bar .st.tour i,.tb.pressed{animation:none}}
 .paperline{font:500 11px 'JetBrains Mono',monospace;letter-spacing:0;white-space:pre;color:${C.ink}}
 `;
 // a pointer press must not leave a console control focused: the visitor's next Space or Enter belongs to the
@@ -169,8 +182,7 @@ export function createConsole(app) {
     mkBtn('q_' + k, l, qx, 822, w);
     qx += w + 4;
   }
-  mkBtn('panels', 'HIDE PANELS', X0, 852, 118);
-  mkBtn('tour', 'PLAY TOUR', X0 + 122, 852, 118);
+  mkBtn('panels', 'HIDE PANELS', X0, 852, 240);
 
   // ------------------------------------------------------------ right column: charts, schematic, cameras
   const RX = 1306;
@@ -231,8 +243,22 @@ export function createConsole(app) {
   void hint;
   const viewTitle = pnl(`<div style="position:absolute;left:0;right:0;top:58px;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px"></div>`);
   const viewSub = pnl(`<div class="cp mu" style="position:absolute;left:0;right:0;top:77px;text-align:center;font-weight:500"></div>`);
-  const chip = add(`<button class="chip" aria-label="Auto tour"></button>`);
-  noPointerFocus(chip);
+  // the status bar: what is running (tour / paused / manual / idle / complete), the tour's position, the one tour
+  // action that fits the moment, the separate RESTART TOUR, and the sound state (never claims sound it cannot play)
+  const bar = add(`<div class="bar" role="group" aria-label="Tour and sound"></div>`);
+  const stEl = add(`<div class="st" role="status" aria-live="polite"><i></i><span></span></div>`, bar);
+  const stText = stEl.querySelector('span');
+  const barBtn = (key, label) => {
+    const b = el(`<button class="tb" type="button" data-k="${key}">${label}</button>`);
+    b.style.pointerEvents = 'auto';
+    bar.appendChild(b);
+    noPointerFocus(b);
+    btn[key] = b;
+    return b;
+  };
+  barBtn('tourMain', 'PAUSE TOUR').classList.add('main');
+  barBtn('tourRestart', 'RESTART TOUR');
+  barBtn('sound', 'ENABLE SOUND');
 
   // ------------------------------------------------------------ callouts, pointer
   const callSvg = add(`<svg style="position:absolute;inset:0;overflow:visible;pointer-events:none" width="1600" height="900"></svg>`);
@@ -335,7 +361,7 @@ export function createConsole(app) {
       setHTML(lpText, line);
     }
     // transport
-    setText(btn.pause, F.paused ? 'PLAY' : 'PAUSE');
+    setText(btn.pause, F.pauseLabel || (F.paused ? 'PLAY' : 'PAUSE'));
     for (const [k, sl] of Object.entries(sliders)) {
       const v = F.sliders[k];
       if (!v) continue;
@@ -345,20 +371,20 @@ export function createConsole(app) {
       sl.el.setAttribute('aria-valuetext', v.text);
     }
     setClass(btn.slow, 'acc', F.slow);
-    // the sound button says what the visitor hears: ENABLE SOUND until a gesture has started audio (never SOUND ON
-    // over a context the browser has not let run), then SOUND ON / SOUND OFF
     const snd = F.sound || (F.muted ? 'off' : 'on');
-    setText(btn.mute, {on: 'SOUND ON', off: 'SOUND OFF', locked: 'ENABLE SOUND', none: 'NO AUDIO'}[snd]);
+    const sndLabel = {on: 'SOUND ON', off: 'SOUND OFF', locked: 'ENABLE SOUND', none: 'NO AUDIO'}[snd];
+    setText(btn.mute, sndLabel);
     setClass(btn.mute, 'on', snd === 'on');
     setClass(btn.mute, 'acc', snd === 'locked');
-    if (memo.get(btn.mute) !== snd) {
-      memo.set(btn.mute, snd);
+    setText(btn.sound, sndLabel);
+    for (const k of ['on', 'off', 'locked', 'none']) setClass(btn.sound, 'snd-' + k, snd === k);
+    if (memo.get(btn.sound) !== snd) {
+      memo.set(btn.sound, snd);
+      btn.sound.disabled = snd === 'none';
       btn.mute.disabled = snd === 'none';
     }
     for (const [k] of QN) setClass(btn['q_' + k], 'on', F.quality === k);
     setText(btn.panels, F.panels ? 'HIDE PANELS' : 'SHOW PANELS');
-    setText(btn.tour, F.tour ? 'STOP TOUR' : 'PLAY TOUR');
-    setClass(btn.tour, 'acc', F.tour);
     for (const k of CAM_BUTTONS) setClass(btn['cam_' + k], 'on', F.camId === k && !F.sub);
     for (const k of SUB_BUTTONS) setClass(btn['sub_' + k], 'acc', F.sub === k);
     setClass(btn.xray, 'on', F.xray);
@@ -369,11 +395,17 @@ export function createConsole(app) {
     // view title
     setText(viewTitle, F.sub ? SUBSYSTEMS[F.sub].label : F.camId.toUpperCase());
     setText(viewSub, F.viewSub || '');
-    // chip
-    if (memo.get(chip) !== F.tour) {
-      memo.set(chip, F.tour);
-      chip.classList.toggle('on', F.tour);
-      chip.innerHTML = F.tour ? '<i></i>AUTO TOUR · CLICK ANYWHERE TO TAKE OVER' : '▶ &nbsp;RESUME TOUR';
+    // status bar
+    {
+      const st = F.status || {mode: F.tour ? 'tour' : 'manual', text: F.tour ? 'TOUR' : 'MANUAL', main: F.tour ? 'PAUSE TOUR' : 'RESUME TOUR', restart: true};
+      setText(stText, st.text);
+      for (const m of ['tour', 'paused', 'manual', 'idle', 'complete']) setClass(stEl, m, st.mode === m);
+      setText(btn.tourMain, st.main);
+      btn.tourMain.setAttribute('aria-label', st.main);
+      if (memo.get(btn.tourRestart) !== st.restart) {
+        memo.set(btn.tourRestart, st.restart);
+        btn.tourRestart.hidden = !st.restart;
+      }
     }
     // charts & schematic (the heavy part; thinned on the low tier)
     if (heavy) {
@@ -405,5 +437,24 @@ export function createConsole(app) {
       ui.classList.toggle('hidden', !F.panels);
     }
   }
-  return {root: ui, btn, sliders, chip, spot, update, pointer, LINE, PITCH};
+  /** brief visual confirmation on a pressed control (the button itself pulses; the ring marks the spot) */
+  const press = (k) => {
+    const b = btn[k];
+    if (!b) return;
+    b.classList.remove('pressed');
+    void b.offsetWidth;
+    b.classList.add('pressed');
+  };
+  const spotOf = (k) => {
+    const b = btn[k];
+    if (b && b.parentElement === bar) {
+      // status-bar buttons are laid out by flex: measure them (stage px)
+      const r = b.getBoundingClientRect();
+      const a = app.getBoundingClientRect();
+      const sc = a.width / 1600 || 1;
+      return [(r.left + r.width / 2 - a.left) / sc, (r.top + r.height / 2 - a.top) / sc];
+    }
+    return spot(k);
+  };
+  return {root: ui, btn, sliders, bar, spot: spotOf, press, update, pointer, LINE, PITCH};
 }

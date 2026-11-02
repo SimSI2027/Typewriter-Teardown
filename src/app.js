@@ -7,7 +7,7 @@ import {barPose, keyLever, link, SEG_Y, RACK_Y} from './kinematics.js';
 import {buildMachine} from './machine.js';
 import {createStage} from './stage.js';
 import {createConsole} from './console/console.js';
-import {accentOf, viewAt} from './views.js';
+import {accentOf, blendCam, blendLook, viewAt} from './views.js';
 
 const V = new THREE.Vector3();
 
@@ -158,19 +158,25 @@ export function createApp({capture = false} = {}) {
 
   /**
    * draw one frame.
-   * F: {S, tau, viewEvents, viewT, camOverride, cursor(fn|obj), live fields for the console}
+   * F: {S, tau, viewEvents, viewT, camOverride, drift, blend {cam, look, k}, cursor(fn|obj), live fields for the console}
    */
   function frame(F) {
     const S = F.S;
     const s = S.stateAt(F.tau);
-    const v = viewAt(F.viewEvents, F.viewT, EXPLODE, F.camOverride);
+    const v = viewAt(F.viewEvents, F.viewT, EXPLODE, F.camOverride, F.drift ?? 1);
+    // a resume / restart blends from the view the visitor was looking at into the tour's (F.blend.k: 0 → 1)
+    const bk = F.blend ? Math.min(1, Math.max(0, F.blend.k)) : 1;
+    if (bk < 1) {
+      v.cam = blendCam(F.blend.cam, v.cam, bk);
+      v.look = blendLook(F.blend.look, v.look, bk, EXPLODE);
+    }
     const acc = accentOf(s);
     machine.update(s, S, {...v.look, accent: acc});
     st.frame(v.cam);
     machine.root.updateMatrixWorld(true);
     // callouts: label offsets from the projected part, fading in after a view change
     const list = CALLOUTS[v.sub || v.camId] || (v.camId === 'hero' || !v.sub ? CALLOUTS.hero : []);
-    const vis = Math.min(1, Math.max(0, (v.since - 0.9) / 0.5)) * (F.callouts === false ? 0 : 1);
+    const vis = Math.min(1, Math.max(0, (v.since - 0.9) / 0.5)) * (F.callouts === false ? 0 : 1) * bk * bk;
     const callouts = [];
     for (const [a, name, sub, off] of list) {
       const w = anchor(a, s, S);

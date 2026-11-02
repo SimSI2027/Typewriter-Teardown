@@ -92,12 +92,15 @@ await test('bundle has no local-path dependencies and the entry HTML is small', 
   for (const f of ['social-preview.png', 'favicon.svg', 'assets/inter.woff2', 'assets/jbmono-500.woff2']) assert.ok(fs.existsSync(path.join('dist', f)), f);
 });
 
-await test('a click hands the machine to the visitor; the tour paper carries over', async () => {
+await test('a drag hands the machine to the visitor; the tour paper carries over', async () => {
   await page.waitForTimeout(1500);
   const before = await L(page, () => LIVE.state.glyphCount); // glyphs printed so far by the tour
-  await page.mouse.click(800, 400);
+  await page.mouse.move(760, 330);
+  await page.mouse.down();
+  await page.mouse.move(800, 340, {steps: 4});
+  await page.mouse.up();
   await settle(page);
-  assert.equal(await L(page, () => LIVE.tour), false);
+  assert.equal(await L(page, () => LIVE.mode), 'manual');
   const after = await L(page, () => LIVE.session.glyphs.length);
   assert.ok(after >= before, 'printed glyphs carried over');
 });
@@ -240,9 +243,10 @@ await test('machine buttons: return, spacing, ribbon colour, lock', async () => 
   assert.equal(await L(page, () => LIVE.state.col), 10);
 });
 
-await test('pause, resume, step, slow motion, speed, timeline scrub', async () => {
+await test('manual mode: pause, play, step, slow motion, speed, timeline scrub drive the visitor machine', async () => {
+  assert.equal(await L(page, () => LIVE.mode), 'manual');
   await clickBtn(page, 'PAUSE');
-  assert.equal(await L(page, () => LIVE.paused), true);
+  assert.equal(await L(page, () => LIVE.machinePaused), true);
   const t0 = await L(page, () => LIVE.state.t);
   await clickBtn(page, 'STEP ▶');
   const t1 = await L(page, () => LIVE.state.t);
@@ -250,13 +254,13 @@ await test('pause, resume, step, slow motion, speed, timeline scrub', async () =
   await clickBtn(page, 'STEP ◀');
   assert.ok((await L(page, () => LIVE.state.t)) < t1);
   await clickBtn(page, 'PLAY');
-  assert.equal(await L(page, () => LIVE.paused), false);
+  assert.equal(await L(page, () => LIVE.machinePaused), false);
   await clickBtn(page, 'SLOW MOTION');
   await clickBtn(page, 'SLOW MOTION');
   // drag the timeline to its start: pauses and rewinds
   const tl = await page.locator('[aria-label="TIMELINE"]').boundingBox();
   await page.mouse.click(tl.x + 2, tl.y + tl.height / 2);
-  assert.equal(await L(page, () => LIVE.paused), true);
+  assert.equal(await L(page, () => LIVE.machinePaused), true);
   const tScrub = await L(page, () => LIVE.state.t);
   await page.mouse.click(tl.x + tl.width - 1, tl.y + tl.height / 2);
   assert.ok((await L(page, () => LIVE.state.t)) > tScrub);
@@ -320,10 +324,12 @@ await test('orbit and zoom', async () => {
   assert.ok(o1.k > o0.k);
 });
 
-await test('tour button and chip restart the tour; inactivity resumes it, never mid-drag', async () => {
-  await clickBtn(page, 'PLAY TOUR');
+await test('RESUME TOUR continues from the held position; inactivity resumes it, never mid-drag', async () => {
+  const held = await L(page, () => LIVE.tourT);
+  await page.locator('button[data-k="tourMain"]').click();
   assert.equal(await L(page, () => LIVE.tour), true);
-  await page.mouse.click(800, 420);
+  assert.equal(await L(page, () => LIVE.transitions.at(-1).tourT), held, 'resumed where it was held');
+  await page.locator('button[data-k="cam_top"]').click();
   assert.equal(await L(page, () => LIVE.tour), false);
   // holding a drag: no resume
   await page.mouse.move(700, 350);
@@ -338,8 +344,8 @@ await test('tour button and chip restart the tour; inactivity resumes it, never 
 });
 
 await test('taking over in the middle of a tour view change continues it without a jump (D-07)', async () => {
-  await L(page, () => LIVE.startTour());
-  await page.waitForFunction(() => LIVE.tour && LIVE.view.k > 0.2 && LIVE.view.k < 0.8, null, {timeout: 20000});
+  await L(page, () => LIVE.restart());
+  await page.waitForFunction(() => LIVE.tour && !LIVE.experience.blending && LIVE.view.k > 0.2 && LIVE.view.k < 0.8, null, {timeout: 20000});
   const d = await L(page, () => {
     const a = LIVE.view;
     LIVE.takeOver();
@@ -394,9 +400,13 @@ for (const [w, h, name, extra] of [[1366, 768, 'laptop-1366'], [1280, 720, 'lapt
     const hint = await o.page.evaluate(() => getComputedStyle(document.getElementById('rotate-hint')).display);
     assert.equal(hint, name === 'phone-portrait' ? 'block' : 'none', `rotate hint ${hint}`);
     if (extra?.touch) {
-      await o.page.touchscreen.tap(m.iw / 2, m.ih / 2);
+      // a tap on a key takes over and types it
+      const id = await o.page.evaluate(() => LIVE.CHAR_KEYS.findIndex((k) => k.lo === 'g'));
+      const pt = await o.page.evaluate((i) => LIVE.keyScreen(i), id);
+      const [x, y] = await toPage(o.page, pt);
+      await o.page.touchscreen.tap(x, y);
       await o.page.waitForTimeout(200);
-      assert.equal(await o.page.evaluate(() => LIVE.tour), false, 'touch takes over');
+      assert.equal(await o.page.evaluate(() => LIVE.mode), 'manual', 'touch takes over');
     }
     await o.page.screenshot({path: path.join(shots, `layout-${name}.png`)});
     assert.deepEqual(o.errors, []);
@@ -411,6 +421,7 @@ await test('reduced motion: the tour does not start by itself, not even after 25
   assert.equal(await o.page.evaluate(() => LIVE.tour), false, 'tour started after idle');
   await o.page.getByRole('button', {name: 'PLAY TOUR', exact: true}).click();
   assert.equal(await o.page.evaluate(() => LIVE.tour), true, 'PLAY TOUR still starts it');
+  assert.ok((await o.page.evaluate(() => LIVE.tourT)) < 0.2, 'from the start');
   assert.deepEqual(o.errors, []);
   await o.ctx.close();
 });

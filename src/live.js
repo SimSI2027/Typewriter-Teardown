@@ -1,26 +1,29 @@
-// The live page. Left alone it plays the tour (its own deterministic session and script) with the operator's cursor;
-// any click, drag, wheel, touch or key press hands the machine to the visitor, who continues from exactly where the
-// tour left the paper. 25 s of quiet hands it back. The visitor's machine is a session too: inputs become actions at
-// the current machine time τ; τ advances with the playback speed and can be paused, stepped and scrubbed.
+// The live page. The experience is an explicit state machine (src/experience.js): the tour plays by itself; PAUSE
+// freezes it; any machine control, key, view control, orbit drag or zoom hands the machine to the visitor (manual)
+// with the tour's position held; RESUME continues from exactly there; RESTART TOUR is the only way back to 0; 25 s of
+// quiet resumes it; the finished tour holds, then loops. Sound, quality, panels and the tour transport never take
+// over. The visitor's machine is a session too: inputs become actions at the current machine time τ; τ advances with
+// the playback speed and can be paused, stepped and scrubbed.
 import * as THREE from 'three';
 import {createApp} from './app.js';
+import {createExperience} from './experience.js';
 import {charToKey, CHAR_KEYS, FN_KEYS} from './keyboard.js';
 import {createSession} from './model.js';
-import {EXPLODE} from './params.js';
+import {EXPERIENCE, EXPLODE} from './params.js';
 import {TIERS} from './stage.js';
 import {createSound} from './sound.js';
 import {buildTourSession, CLICKS, DURATION, makeCursor, speedAt, tauAt, VIEW_EVENTS} from './tour.js';
-import {CAM_BUTTONS, SUB_BUTTONS, viewAt} from './views.js';
+import {CAM_BUTTONS, easeView, SUB_BUTTONS, viewAt} from './views.js';
 import {warmComposer} from './kit/warm.js';
 
 const W = 1600;
 const H = 900;
-const IDLE = 25;
 const MAX_BACKLOG = 8; // seconds of queued machine time before further typing is refused
 const LOOK = 0.1; // s of wall time the sound is scheduled ahead
 const LATE = 0.12; // s of wall time a cue may run late after a slow frame (it then plays at once)
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const SPEEDS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2];
+const DUR_TEXT = +DURATION.toFixed(1);
 
 export async function runLive() {
   const app = createApp({capture: false});
@@ -60,75 +63,80 @@ export async function runLive() {
 
   // ------------------------------------------------------------ state
   let T = 0; // wall clock (s), only advances while the page is visible
-  let sid = 1;
-  const tour = {on: !reduced, t0: 0, S: null, cursor: null};
-  const newTour = () => {
+  const X = createExperience({duration: DURATION, reduced});
+  // the tour: one immutable session, cursor and view script, built once (resume and restart only move the clock)
+  const tour = (() => {
     const {S, presses} = buildTourSession();
-    tour.S = S;
-    tour.cursor = makeCursor(presses);
-  };
-  newTour();
+    return {S, cursor: makeCursor(presses)};
+  })();
+  let sid = 1;
   let V = createSession();
   V.id = `v${sid}`;
   let tau = 0; // visitor machine time
-  let paused = false;
+  let machinePaused = false; // the visitor's machine clock (manual modes); never the tour's
   let speedI = 4;
   let slow = false;
   let panels = true;
   let VE = [{t: -99, cam: 'hero'}]; // visitor view events (wall time)
   const off = {az: 0, el: 0, k: 1};
-  let lastInput = -1e9;
   let ring = {t: -9, x: 0, y: 0};
   let heard = {S: null, at: 0, fresh: true, keys: new Map()};
+  let blend = null; // {cam, look, T0}: the view a resumed / restarted tour blends in from
+  let lastDrawn = null; // {cam, look, view, cursor} of the last frame drawn
   // catch-up: while keystrokes are queued, machine time runs faster (up to 5×) so a typist is never left behind;
   // with nothing queued it runs at the chosen speed. Slow motion and pause are never overridden.
   const rate = () => {
-    if (paused) return 0;
+    if (machinePaused) return 0;
     const base = SPEEDS[speedI] * (slow ? 0.25 : 1);
     if (slow || speedI < 4) return base;
     const backlog = Math.max(0, V.end - tau);
     return base * Math.min(5, 1 + backlog * 1.6);
   };
 
-  const startTour = () => {
-    newTour();
-    tour.on = true;
-    tour.t0 = T;
-    Object.assign(off, {az: 0, el: 0, k: 1});
-    paused = false;
-  };
-  /** the visitor takes over: carry the tour's paper, carriage and current view into a visitor session */
-  const takeOver = () => {
-    lastInput = T;
-    if (!tour.on) return;
-    tour.on = false;
-    const t = Math.min(DURATION, T - tour.t0);
+  /** the visitor gets the machine as the tour left it at tour time t: paper, carriage, view (no jump anywhere) */
+  const handOver = (t) => {
     const tt = tauAt(t);
-    const s = tour.S.stateAt(tt);
-    const i = tour.S.indexAt(tt);
-    const done = i >= 0 ? (tt >= tour.S.acts[i].t0 + tour.S.acts[i].dur ? tour.S.acts[i].after : tour.S.acts[i].before) : tour.S.init;
+    const S = tour.S;
+    const s = S.stateAt(tt);
+    const i = S.indexAt(tt);
+    const inProgress = i >= 0 && tt < S.acts[i].t0 + S.acts[i].dur;
+    const done = i >= 0 ? (inProgress ? S.acts[i].before : S.acts[i].after) : S.init;
     sid++;
     V = createSession({initial: {...done, bellAt: -1e9}});
     V.id = `v${sid}`;
-    // the printed sheet carries over
-    for (let g = 0; g < s.glyphCount; g++) V.glyphs.push({...tour.S.glyphs[g], t: -1});
     tau = 0;
+    machinePaused = false;
+    // the printed sheet carries over (a stroke in progress re-adds its own glyph when it completes below)
+    const a = inProgress ? S.acts[i] : null;
+    const carry = a && a.glyphIdx != null ? a.glyphIdx : s.glyphCount;
+    for (let g = 0; g < carry; g++) V.glyphs.push({...S.glyphs[g], t: -1});
     // an action in progress finishes in the visitor's session
-    if (i >= 0 && tt < tour.S.acts[i].t0 + tour.S.acts[i].dur) {
-      const a = tour.S.acts[i];
-      const req = {type: a.type === 'locked' ? 'char' : a.type, key: a.key, value: a.value};
-      V.push(req, -(tt - a.t0));
-    }
+    if (a) V.push({type: a.type === 'locked' ? 'char' : a.type, key: a.key, value: a.value}, -(tt - a.t0));
     // the tour's view events so far, moved onto the wall clock: a transition in progress carries on (D-07)
     // (the tour's first event, at t = 0, sets the hero view; no extra start event, or the camera drift would restart)
     VE = VIEW_EVENTS.filter((e) => e.t <= t).map((e) => ({...e, t: T - (t - e.t)}));
     if (!VE.length) VE = [{t: -99, cam: 'hero'}];
     Object.assign(off, {az: 0, el: 0, k: 1});
   };
+  /** side effects of an experience transition */
+  const onTransition = (e) => {
+    if (!e) return e;
+    if (e.type === 'takeover' || e.type === 'complete') handOver(X.tourT);
+    if ((e.type === 'resume' || e.type === 'restart') && lastDrawn) {
+      // the tour's camera and look take over from whatever the visitor was looking at, without a cut
+      blend = {cam: {...lastDrawn.cam}, look: structuredClone(lastDrawn.look), T0: T};
+      Object.assign(off, {az: 0, el: 0, k: 1});
+    }
+    return e;
+  };
+  const takeOver = () => onTransition(X.takeover(T));
   const pulse = (x, y) => (ring = {t: T, x, y});
-  const pulseBtn = (k) => pulse(...ui.spot(k));
+  const pulseBtn = (k) => {
+    ui.press(k);
+    pulse(...ui.spot(k));
+  };
   const view = (e) => VE.push({t: T, ...e});
-  const curView = () => viewAt(VE, T, EXPLODE);
+  const curView = () => viewAt(VE, T, EXPLODE, undefined, reduced ? 0 : 1);
 
   // ------------------------------------------------------------ sound: every gesture may unlock it
   // (capture phase, so it runs before any handler; it never takes over and never changes the visitor's settings)
@@ -146,19 +154,18 @@ export async function runLive() {
     if (soundAtPress === 'off') sound.setMuted(false);
     else if (soundAtPress === 'on') sound.setMuted(true);
   };
-  // sound controls never take the machine from the tour
-  const soundControl = (n) => !!n?.closest?.('[data-k="mute"], [aria-label="VOLUME"]');
 
   // ------------------------------------------------------------ actions from the visitor
   const act = (req) => {
     takeOver();
     if (V.end - tau > MAX_BACKLOG) return null; // too far ahead: refuse safely
-    if (tau < V.end - 1e-6 && paused) V.truncate(tau); // typing after a scrub back replaces the future
+    if (tau < V.end - 1e-6 && machinePaused) V.truncate(tau); // typing after a scrub back replaces the future
     return V.push(req, tau);
   };
   const typeChar = (ch, physicalShift) => {
     const m = charToKey(ch);
     if (!m) return false;
+    takeOver(); // first: the shift state below must be the machine the visitor is taking over
     const shifted = V.last.shift > 0.5;
     if (m.upper && !shifted) {
       act({type: 'shiftDown'});
@@ -171,30 +178,42 @@ export async function runLive() {
     return true;
   };
   const fnKey = (k) => {
+    takeOver();
     if (k.id === 'shiftL' || k.id === 'shiftR') act({type: V.last.shift > 0.5 ? 'shiftUp' : 'shiftDown'});
     else if (k.id === 'lock') act({type: 'lock'});
     else if (k.id === 'back') act({type: 'backspace'});
     else if (k.id === 'mrel') act({type: 'release'});
   };
+  /** step: the tour's clock while the tour is on screen, the visitor's machine clock otherwise */
+  const step = (dir) => {
+    if (X.showsTour) onTransition(X.seek(T, X.tourT + dir / 60));
+    else {
+      machinePaused = true;
+      tau = Math.max(0, tau + dir / 120);
+    }
+  };
 
   // ------------------------------------------------------------ console buttons
   const B = ui.btn;
+  // kind: 'takeover' (the visitor takes the machine), 'keep' (the tour keeps playing)
   const on = (k, fn, kind = 'takeover') =>
     B[k]?.addEventListener('click', (e) => {
       e.stopPropagation();
+      X.input(T);
       if (kind === 'takeover') takeOver();
-      else lastInput = T;
       pulseBtn(k);
       fn();
     });
-  for (const k of CAM_BUTTONS) on('cam_' + k, () => {
-    Object.assign(off, {az: 0, el: 0, k: 1});
-    view({cam: k, sub: 'reassemble'});
-  });
-  for (const k of SUB_BUTTONS) on('sub_' + k, () => {
-    Object.assign(off, {az: 0, el: 0, k: 1});
-    view({sub: k, cam: undefined});
-  });
+  for (const k of CAM_BUTTONS)
+    on('cam_' + k, () => {
+      Object.assign(off, {az: 0, el: 0, k: 1});
+      view({cam: k, sub: 'reassemble'});
+    });
+  for (const k of SUB_BUTTONS)
+    on('sub_' + k, () => {
+      Object.assign(off, {az: 0, el: 0, k: 1});
+      view({sub: k, cam: undefined});
+    });
   on('xray', () => view({xray: !curView().xray}));
   on('cutaway', () => view({cutaway: !curView().cutaway}));
   on('reassemble', () => view({sub: 'reassemble', xray: false, cutaway: false, cam: curView().camId}));
@@ -202,45 +221,35 @@ export async function runLive() {
   on('spacing', () => act({type: 'spacing'}));
   on('color', () => act({type: 'color'}));
   on('lockBtn', () => act({type: 'lock'}));
-  on('pause', () => (paused = !paused));
-  on('stepB', () => {
-    paused = true;
-    tau = Math.max(0, tau - 1 / 120);
-  });
-  on('stepF', () => {
-    paused = true;
-    tau += 1 / 120;
-  });
   on('reset', () => {
     sid++;
     V = createSession();
     V.id = `v${sid}`;
     tau = 0;
-    paused = false;
+    machinePaused = false;
   });
   on('slow', () => (slow = !slow));
+  // the transport row drives whatever is playing: the tour while it is on screen, the visitor's machine otherwise
+  on('pause', () => (X.showsTour ? onTransition(X.toggle(T)) : (machinePaused = !machinePaused)), 'keep');
+  on('stepB', () => step(-1), 'keep');
+  on('stepF', () => step(1), 'keep');
   on('mute', soundButton, 'keep');
+  on('sound', soundButton, 'keep');
   for (const q of ['auto', 'high', 'balanced', 'low'])
-    on('q_' + q, () => {
-      quality = q;
-      tier = q === 'auto' ? (coarse ? 'low' : 'high') : q;
-      perf.slow = 0;
-      perf.age = 0;
-      applyTier();
-    });
-  on('panels', () => (panels = !panels));
-  B.tour.addEventListener('click', (e) => {
-    e.stopPropagation();
-    lastInput = T;
-    if (tour.on) takeOver();
-    else startTour();
-  });
-  ui.chip.addEventListener('click', (e) => {
-    e.stopPropagation();
-    lastInput = T;
-    if (tour.on) takeOver();
-    else startTour();
-  });
+    on(
+      'q_' + q,
+      () => {
+        quality = q;
+        tier = q === 'auto' ? (coarse ? 'low' : 'high') : q;
+        perf.slow = 0;
+        perf.age = 0;
+        applyTier();
+      },
+      'keep',
+    );
+  on('panels', () => (panels = !panels), 'keep');
+  on('tourMain', () => onTransition(X.toggle(T)), 'keep');
+  on('tourRestart', () => onTransition(X.restart(T)), 'keep');
 
   // sliders: drag along the track, or arrow keys when focused
   const timeRange = () => {
@@ -248,31 +257,34 @@ export async function runLive() {
     return [Math.max(0, t1 - 30), t1];
   };
   const sliderDefs = {
-    speed: {get: () => speedI / (SPEEDS.length - 1), set: (k) => (speedI = Math.round(k * (SPEEDS.length - 1)))},
+    speed: {kind: 'takeover', get: () => speedI / (SPEEDS.length - 1), set: (k) => (speedI = Math.round(k * (SPEEDS.length - 1)))},
     time: {
+      kind: 'keep',
       get: () => {
+        if (X.showsTour) return X.tourT / DURATION;
         const [a, b] = timeRange();
         return (tau - a) / (b - a || 1);
       },
       set: (k) => {
+        if (X.showsTour) return onTransition(X.seek(T, k * DURATION)); // scrub the tour (it stays paused)
         const [a, b] = timeRange();
-        paused = true;
+        machinePaused = true;
         tau = a + k * (b - a);
       },
     },
-    vol: {get: () => sound.volume, set: (k) => sound.setVolume(k)},
+    vol: {kind: 'keep', get: () => sound.volume, set: (k) => sound.setVolume(k)},
   };
   for (const [k, def] of Object.entries(sliderDefs)) {
     const sl = ui.sliders[k];
     const move = (e) => {
       const [x] = toStage(e.clientX, e.clientY);
       def.set(clamp((x - sl.x) / sl.w, 0, 1));
-      lastInput = T;
+      X.input(T);
     };
     sl.el.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
-      if (k !== 'vol') takeOver();
-      else lastInput = T;
+      X.input(T);
+      if (def.kind === 'takeover') takeOver();
       sl.el.setPointerCapture(e.pointerId);
       move(e);
       const mv = (ev) => move(ev);
@@ -287,10 +299,10 @@ export async function runLive() {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault();
       e.stopPropagation();
-      if (k !== 'vol') takeOver();
-      else lastInput = T;
-      const step = k === 'time' ? 0.02 : k === 'speed' ? 1 / (SPEEDS.length - 1) : 0.05;
-      def.set(clamp(def.get() + (e.key === 'ArrowRight' ? step : -step), 0, 1));
+      X.input(T);
+      if (def.kind === 'takeover') takeOver();
+      const stp = k === 'time' ? 0.02 : k === 'speed' ? 1 / (SPEEDS.length - 1) : 0.05;
+      def.set(clamp(def.get() + (e.key === 'ArrowRight' ? stp : -stp), 0, 1));
     });
   }
 
@@ -298,37 +310,26 @@ export async function runLive() {
   const physical = {shift: false};
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    X.input(T);
     const tgt = e.target;
     const onControl = tgt && (tgt.tagName === 'BUTTON' || tgt.getAttribute?.('role') === 'slider');
-    if (onControl && (e.key === 'Enter' || e.key === ' ' || e.key.startsWith('Arrow'))) {
-      takeOver();
-      return; // let the focused control handle it
-    }
-    if (e.key === 'Tab') {
-      takeOver();
-      return;
-    }
+    if (onControl && (e.key === 'Enter' || e.key === ' ' || e.key.startsWith('Arrow'))) return; // the focused control handles it
+    if (e.key === 'Tab') return; // moving focus is not a takeover
     let handled = true;
     if (e.key === 'Shift') {
       if (!e.repeat && !physical.shift) {
         physical.shift = true;
-        act({type: 'shiftDown'});
+        takeOver();
+        if (V.last.shift < 0.5) act({type: 'shiftDown'});
       }
     } else if (e.key === 'CapsLock') act({type: 'lock'});
     else if (e.key === 'Enter') act({type: 'ret'});
     else if (e.key === 'Backspace') act({type: 'backspace'});
     else if (e.key === ' ') act({type: 'space'});
-    else if (e.key === 'Escape') {
-      takeOver();
-      panels = !panels;
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      takeOver();
-      paused = true;
-      tau = Math.max(0, tau + (e.key === 'ArrowRight' ? 1 : -1) / 120);
-    } else if (e.key.length === 1) {
-      takeOver();
-      typeChar(e.key, physical.shift);
-    } else handled = false;
+    else if (e.key === 'Escape') panels = !panels;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') step(e.key === 'ArrowRight' ? 1 : -1);
+    else if (e.key.length === 1) typeChar(e.key, physical.shift);
+    else handled = false;
     if (handled) e.preventDefault();
   });
   addEventListener('keyup', (e) => {
@@ -345,6 +346,8 @@ export async function runLive() {
   });
 
   // ------------------------------------------------------------ pointer: orbit, zoom, click the machine
+  // A press on the machine is not yet a takeover: it becomes one when it turns into a drag (orbit) or lands on a key,
+  // the space bar or the return lever. A plain click on empty space only wakes the sound.
   const canvas = st.renderer.domElement;
   canvas.style.touchAction = 'none';
   canvas.style.cursor = 'grab';
@@ -373,7 +376,7 @@ export async function runLive() {
     return null;
   };
   canvas.addEventListener('pointerdown', (e) => {
-    takeOver();
+    X.input(T);
     drag = {x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, moved: false};
     canvas.setPointerCapture(e.pointerId);
     canvas.style.cursor = 'grabbing';
@@ -387,18 +390,22 @@ export async function runLive() {
     }
     const dx = (e.clientX - drag.x) / scale;
     const dy = (e.clientY - drag.y) / scale;
-    if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 4) drag.moved = true;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > EXPERIENCE.dragStart) {
+      drag.moved = true;
+      takeOver(); // an orbit drag is the visitor taking the camera
+    }
     if (drag.moved) {
       off.az -= dx * 0.3;
       off.el = clamp(off.el + dy * 0.2, -25, 55);
     }
     drag.x = e.clientX;
     drag.y = e.clientY;
-    lastInput = T;
+    X.input(T);
   });
   const endDrag = (e) => {
     if (drag && !drag.moved && e.type === 'pointerup') {
       const p = pick(e.clientX, e.clientY);
+      if (p) pulse(...toStage(e.clientX, e.clientY));
       if (p?.key) {
         if (p.key.kind === 'char') act({type: 'char', key: p.key.id});
         else fnKey(p.key);
@@ -419,11 +426,8 @@ export async function runLive() {
     },
     {passive: false},
   );
-  addEventListener('pointerdown', (e) => {
-    if (e.target === ui.chip || e.target === B.tour || soundControl(e.target)) return;
-    takeOver();
-  });
-  addEventListener('touchstart', () => takeOver(), {passive: true});
+  // moving the pointer over the page counts as using it (no automatic resume under an active visitor)
+  addEventListener('pointermove', () => X.input(T), {passive: true});
 
   // ------------------------------------------------------------ visibility: stop work when hidden
   let hidden = document.hidden;
@@ -440,8 +444,8 @@ export async function runLive() {
   const perf = {n: 0, sum: 0, slow: 0, age: 0, fps: 60};
   let last = performance.now();
   let frameNo = 0;
-  const cueKey = (c) => `${c.kind}@${c.t.toFixed(6)}`;
   const camOverride = (cam) => ({...cam, az: cam.az + off.az, el: clamp(cam.el + off.el, -15, 85), d: cam.d * off.k});
+  const cueKey = (c) => `${c.kind}@${c.t.toFixed(6)}`;
   const frame = (now) => {
     requestAnimationFrame(frame);
     if (hidden) return;
@@ -467,61 +471,65 @@ export async function runLive() {
       perf.sum = 0;
       perf.n = 0;
     }
-    // with reduced motion the tour never starts by itself (PLAY TOUR still works) — D-05
-    if (!tour.on && !reduced && T - lastInput > IDLE && !drag) startTour();
+    // the experience clock: the tour advances, completes, or comes back after quiet (never mid-drag, never while the
+    // visitor's own machine is still working through their keystrokes, never while they hold their machine paused)
+    const busy = X.showsVisitor && !machinePaused && V.end > tau + 1e-6;
+    onTransition(X.tick(T, dt, {active: !!drag || busy, held: X.showsVisitor && machinePaused}));
 
     let F;
     let S;
     let tauNow;
     let cueRate;
-    if (tour.on) {
-      let t = T - tour.t0;
-      if (t > DURATION) {
-        startTour();
-        t = 0;
-      }
+    const ringK = Math.max(0, 1 - (T - ring.t) / 0.55);
+    if (X.showsTour) {
+      const t = X.tourT;
       S = tour.S;
       tauNow = tauAt(t);
-      cueRate = speedAt(t);
-      const ringK = Math.max(0, 1 - (T - ring.t) / 0.55);
+      cueRate = X.mode === 'tour' ? speedAt(t) : 0;
       F = {
         S,
         tau: tauNow,
         viewEvents: VIEW_EVENTS,
         viewT: t,
-        camOverride: reduced ? (c) => c : undefined,
+        drift: reduced ? 0 : 1,
         cursor: (project) => {
           const c = tour.cursor(t, ui.spot, project);
           return ringK > c.ring ? {...c, ring: ringK, ringX: ring.x, ringY: ring.y} : c;
         },
-        ui: {paused: false, slow: cueRate < 0.7, muted: sound.muted, sound: sound.status, quality, panels, tour: true, sliders: sliderVals(cueRate, t / DURATION, `${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`), viewSub: viewSub()},
+        ui: {slow: speedAt(t) < 0.7, quality, panels, tour: true, sliders: sliderVals(speedAt(t), t / DURATION, `${t.toFixed(1)} / ${DUR_TEXT} S`, speedAt(t) / 2), viewSub: viewSub()},
       };
-      // tour button clicks make the soft UI tick
-      for (const c of CLICKS) if (c.t > t - dt && c.t <= t) sound.schedule([{kind: 'ui', gain: 1, pitch: 1, offset: 0}]);
+      // the tour's button clicks make the soft UI tick
+      if (X.mode === 'tour') for (const c of CLICKS) if (c.t > t - dt && c.t <= t) sound.schedule([{kind: 'ui', gain: 1, pitch: 1, offset: 0}]);
     } else {
       tau += dt * rate();
       S = V;
       tauNow = tau;
       cueRate = rate();
       const [a, b] = timeRange();
-      const ringK = Math.max(0, 1 - (T - ring.t) / 0.55);
       F = {
         S,
         tau,
         viewEvents: VE,
         viewT: T,
+        drift: reduced ? 0 : 1,
         camOverride,
         cursor: {x: -99, y: -99, press: false, ring: ringK, ringX: ring.x, ringY: ring.y},
-        ui: {paused, slow, muted: sound.muted, sound: sound.status, quality, panels, tour: false, sliders: sliderVals(SPEEDS[speedI] * (slow ? 0.25 : 1), (tau - a) / (b - a || 1), `${tau.toFixed(2)} S`), viewSub: viewSub()},
+        ui: {slow, quality, panels, tour: false, sliders: sliderVals(SPEEDS[speedI] * (slow ? 0.25 : 1), (tau - a) / (b - a || 1), `${tau.toFixed(2)} S`), viewSub: viewSub()},
       };
     }
+    // a resumed / restarted tour blends in from the visitor's view (any mode: a takeover during the blend keeps it)
+    if (blend) {
+      const k = (T - blend.T0) / EXPERIENCE.resumeBlend;
+      if (k >= 1) blend = null;
+      else F.blend = {cam: blend.cam, look: blend.look, k: easeView(k)};
+    }
+    Object.assign(F.ui, {pauseLabel: pauseLabel(), sound: sound.status, status: status()});
     F.heavy = tier !== 'low' || frameNo % 2 === 0;
-    app.frame(F);
+    const {v} = app.frame(F);
+    lastDrawn = {cam: v.cam, look: v.look, view: v};
     // sound: every cue of the session from now to a short look-ahead, each scheduled exactly once at its machine time
     // (a new session or a jump back starts afresh; a jump forward — a scrub, a step, a long frame — skips what it
-    // jumped over but keeps the record of what is already scheduled, so nothing ever plays twice). The old window
-    // [last look-ahead, look-ahead) was reset every frame because the look-ahead always lay ahead of τ: every cue
-    // played once per frame inside the window (3× at 60 Hz, 8× at 144 Hz).
+    // jumped over but keeps the record of what is already scheduled, so nothing ever plays twice)
     if (heard.S !== S || tauNow < heard.at - 1e-6) heard = {S, at: tauNow, fresh: true, keys: new Map()};
     else if ((cueRate === 0 && tauNow !== heard.at) || tauNow - heard.at > (LOOK + LATE) * Math.max(1, cueRate)) heard.fresh = true;
     if (cueRate > 0) {
@@ -539,15 +547,35 @@ export async function runLive() {
       document.getElementById('boot')?.remove();
     }
   };
-  function sliderVals(sp, tk, ttext) {
+  function sliderVals(sp, tk, ttext, spk = speedI / (SPEEDS.length - 1)) {
     return {
-      speed: {k: clamp(speedI / (SPEEDS.length - 1), 0, 1), text: `${sp >= 1 ? sp.toFixed(1) : sp.toFixed(2)}×`},
+      speed: {k: clamp(spk, 0, 1), text: `${sp >= 1 ? sp.toFixed(1) : sp.toFixed(2)}×`},
       time: {k: clamp(tk, 0, 1), text: ttext},
       vol: {k: sound.volume, text: `${Math.round(sound.volume * 100)} %`},
     };
   }
+  function pauseLabel() {
+    if (X.showsTour) return X.mode === 'tour' ? 'PAUSE' : 'RESUME';
+    return machinePaused ? 'PLAY' : 'PAUSE';
+  }
+  function status() {
+    const m = X.mode;
+    const t = X.tourT.toFixed(1);
+    const auto = X.autoIn(T);
+    const resumeLabel = X.started ? 'RESUME TOUR' : 'PLAY TOUR';
+    if (m === 'tour') return {mode: m, text: `TOUR · ${t} / ${DUR_TEXT} S`, main: 'PAUSE TOUR', restart: true};
+    if (m === 'paused') return {mode: m, text: `PAUSED · ${t} / ${DUR_TEXT} S`, main: 'RESUME TOUR', restart: true};
+    if (m === 'idle') return {mode: m, text: `MANUAL · TOUR RESUMES IN ${Math.ceil(auto)} S`, main: resumeLabel, restart: true};
+    if (m === 'complete') return {mode: m, text: auto != null && auto <= EXPERIENCE.completeHold ? `TOUR COMPLETE · AGAIN IN ${Math.ceil(auto)} S` : 'TOUR COMPLETE', main: 'RESTART TOUR', restart: false};
+    if (m === 'manual') return {mode: m, text: X.started ? `MANUAL · TOUR HELD AT ${t} S` : reduced ? 'MANUAL · REDUCED MOTION' : 'MANUAL', main: resumeLabel, restart: X.started};
+    return {mode: m, text: 'LOADING', main: 'PAUSE TOUR', restart: false};
+  }
   function viewSub() {
-    return tour.on ? '' : paused ? 'PAUSED · ARROWS STEP · DRAG THE TIMELINE TO SCRUB' : '';
+    if (X.mode === 'paused') return 'TOUR PAUSED · ARROWS STEP · DRAG THE TIMELINE TO SCRUB';
+    if (X.showsTour) return '';
+    if (machinePaused) return 'MACHINE PAUSED · ARROWS STEP · DRAG THE TIMELINE TO SCRUB';
+    if (V.end <= tau + 1e-6) return 'YOUR MACHINE · TYPE OR CLICK A KEY TO RUN IT';
+    return '';
   }
 
   // every shader compiles before the first frame (kit/warm.js): draw one frame of each look first so materials with
@@ -559,16 +587,28 @@ export async function runLive() {
   machine.setAllGhost(false);
   app.frame({S: tour.S, tau: 0, viewEvents: [{t: -99, cam: 'hero'}], viewT: 0, cursor: null, ui: {sliders: {}, panels: true}});
   await warmComposer(st.renderer, st.composer, st.scene, st.camera).catch(() => {});
-  if (!tour.on) lastInput = 0;
-  tour.t0 = T;
+  onTransition(X.ready(T));
   last = performance.now();
   requestAnimationFrame(frame);
   window.LIVE = {
     get state() {
-      return (tour.on ? tour.S : V).stateAt(tour.on ? tauAt(T - tour.t0) : tau);
+      return (X.showsTour ? tour.S : V).stateAt(X.showsTour ? tauAt(X.tourT) : tau);
+    },
+    /** the experience state machine: mode, tour position, how the tour run began, quiet time, countdown */
+    get experience() {
+      return {...X.snapshot(T), machinePaused, blending: !!blend};
+    },
+    get mode() {
+      return X.mode;
+    },
+    get tourT() {
+      return X.tourT;
     },
     get tour() {
-      return tour.on;
+      return X.mode === 'tour';
+    },
+    get transitions() {
+      return X.log.map((e) => ({...e}));
     },
     get tier() {
       return tier;
@@ -580,13 +620,21 @@ export async function runLive() {
       return perf.fps;
     },
     get session() {
-      return tour.on ? tour.S : V;
+      return X.showsTour ? tour.S : V;
     },
     get view() {
-      return tour.on ? viewAt(VIEW_EVENTS, T - tour.t0, EXPLODE) : curView();
+      return X.showsTour ? viewAt(VIEW_EVENTS, X.tourT, EXPLODE, undefined, reduced ? 0 : 1) : curView();
     },
-    get paused() {
-      return paused;
+    /** what the last frame actually drew (after any resume blend) */
+    get drawn() {
+      return lastDrawn ? {cam: {...lastDrawn.cam}, camId: lastDrawn.view.camId, sub: lastDrawn.view.sub, k: lastDrawn.view.k} : null;
+    },
+    get cursorShown() {
+      const c = document.querySelector('.cur');
+      return !!c && c.style.display !== 'none';
+    },
+    get machinePaused() {
+      return machinePaused;
     },
     get panels() {
       return panels;
@@ -604,12 +652,16 @@ export async function runLive() {
     get offset() {
       return {...off};
     },
-    idleFor: (s) => (lastInput = T - s),
+    /** tests: pretend the visitor has been quiet for s seconds */
+    idleFor: (s) => X.input(T - s),
     get T() {
       return T;
     },
     takeOver,
-    startTour,
+    pause: () => onTransition(X.pause(T)),
+    resume: () => onTransition(X.resume(T)),
+    restart: () => onTransition(X.restart(T)),
+    seek: (t) => onTransition(X.seek(T, t)),
     keyScreen: (id) => app.keyScreen(typeof id === 'number' ? CHAR_KEYS[id] : FN_KEYS.find((k) => k.id === id)),
     partScreen: (n) => app.partScreen(n),
     get scale() {
