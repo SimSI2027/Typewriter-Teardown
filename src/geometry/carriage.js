@@ -203,7 +203,10 @@ export function buildCarriage(mats, nodes) {
     const tg = new THREE.Group();
     // table plane: from just behind the platen along the paper's incoming direction
     const {tilt, len, mid} = paperTable();
-    tg.position.set(0, axisY + mid[0] - 1.6, axisZ + mid[1] - 1);
+    // the plate lies under the sheet: its decal face (+1.4 mm over the plate's 1.2 mm half thickness) stays below the
+    // paper, so a loaded sheet covers the name as it would on the machine
+    const under = 4;
+    tg.position.set(0, axisY + mid[0] - under * Math.cos(tilt), axisZ + mid[1] - under * Math.sin(tilt));
     tg.rotation.x = tilt;
     plG.add(tg);
     mesh(boxGeo(tableW, 2.4, len, 1), m('platen', 'iron'), [0, 0, 0], null, tg);

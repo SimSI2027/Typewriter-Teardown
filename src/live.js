@@ -32,7 +32,15 @@ export async function runLive() {
   let tier = coarse ? 'low' : 'high';
   let scale = 1;
   const appEl = document.getElementById('app');
+  // portrait phones letterbox the 1600 × 900 console to a sliver: say so, outside the stage, in readable type (D-13)
+  const rotateHint = document.createElement('div');
+  rotateHint.id = 'rotate-hint';
+  rotateHint.setAttribute('role', 'note');
+  rotateHint.textContent = 'Turn the phone sideways for the full console';
+  rotateHint.style.cssText = 'position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);display:none;padding:7px 12px;font:600 11px/1.2 Inter,system-ui,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#5e5a52;background:rgba(255,255,255,.92);border:1px solid #e2ddd2;white-space:nowrap;pointer-events:none;z-index:5';
+  document.body.appendChild(rotateHint);
   const fit = () => {
+    rotateHint.style.display = innerHeight > innerWidth * 1.15 && innerWidth < 700 ? 'block' : 'none';
     scale = Math.min(innerWidth / W, innerHeight / H);
     appEl.style.transform = `translate(${((innerWidth - W * scale) / 2).toFixed(1)}px, ${((innerHeight - H * scale) / 2).toFixed(1)}px) scale(${scale})`;
     st.resize(W, H, clamp((devicePixelRatio || 1) * scale, 0.6, TIERS[tier].pr));
@@ -111,8 +119,10 @@ export async function runLive() {
       const req = {type: a.type === 'locked' ? 'char' : a.type, key: a.key, value: a.value};
       V.push(req, -(tt - a.t0));
     }
-    const v = viewAt(VIEW_EVENTS, t, EXPLODE);
-    VE = [{t: -99, cam: v.camId, sub: v.sub, xray: v.xray, cutaway: v.cutaway}];
+    // the tour's view events so far, moved onto the wall clock: a transition in progress carries on (D-07)
+    // (the tour's first event, at t = 0, sets the hero view; no extra start event, or the camera drift would restart)
+    VE = VIEW_EVENTS.filter((e) => e.t <= t).map((e) => ({...e, t: T - (t - e.t)}));
+    if (!VE.length) VE = [{t: -99, cam: 'hero'}];
     Object.assign(off, {az: 0, el: 0, k: 1});
     heard = {S: null, tau: 0};
   };
@@ -438,7 +448,8 @@ export async function runLive() {
       perf.sum = 0;
       perf.n = 0;
     }
-    if (!tour.on && T - lastInput > IDLE && !drag) startTour();
+    // with reduced motion the tour never starts by itself (PLAY TOUR still works) — D-05
+    if (!tour.on && !reduced && T - lastInput > IDLE && !drag) startTour();
 
     let F;
     let S;

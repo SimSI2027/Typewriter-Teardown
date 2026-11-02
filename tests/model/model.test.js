@@ -313,3 +313,17 @@ test('timings are positive and phases ordered', () => {
   assert.ok(PH.ribbonUp[1] <= PH.impact, 'ribbon is up before impact');
   assert.ok(PH.keyDown[1] < PH.impact);
 });
+
+test('ribbon colour selector steps black → red → stencil → black; stencil lifts nothing (D-12)', () => {
+  const S = createSession();
+  const seen = [];
+  for (let i = 0; i < 4; i++) {
+    S.push({type: 'color'});
+    seen.push(S.last.color);
+  }
+  assert.deepEqual(seen, ['red', 'stencil', 'black', 'red']);
+  const St = createSession({initial: {color: 'stencil'}});
+  const a = St.push({type: 'char', key: charToKey('e').key});
+  for (let p = 0; p < 1; p += 0.05) assert.equal(St.stateAt(a.t0 + p * a.dur).ribbonLift, 0);
+  assert.equal(St.glyphs[0].color, 'stencil');
+});

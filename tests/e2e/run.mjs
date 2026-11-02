@@ -222,6 +222,9 @@ await test('machine buttons: return, spacing, ribbon colour, lock', async () => 
   assert.equal(await L(page, () => LIVE.state.color), 'red');
   await clickBtn(page, 'RED');
   await waitIdle(page);
+  assert.equal(await L(page, () => LIVE.state.color), 'stencil', 'the selector reaches stencil (D-12)');
+  await clickBtn(page, 'STENCIL');
+  await waitIdle(page);
   assert.equal(await L(page, () => LIVE.state.color), 'black');
   await clickBtn(page, 'LOCK');
   await waitIdle(page);
@@ -328,6 +331,40 @@ await test('tour button and chip restart the tour; inactivity resumes it, never 
   assert.equal(await L(page, () => LIVE.tour), true, 'tour resumes after 25 s of quiet');
 });
 
+await test('taking over in the middle of a tour view change continues it without a jump (D-07)', async () => {
+  await L(page, () => LIVE.startTour());
+  await page.waitForFunction(() => LIVE.tour && LIVE.view.k > 0.2 && LIVE.view.k < 0.8, null, {timeout: 20000});
+  const d = await L(page, () => {
+    const a = LIVE.view;
+    LIVE.takeOver();
+    const b = LIVE.view;
+    return {dd: Math.abs(a.cam.d - b.cam.d), daz: Math.abs(a.cam.az - b.cam.az), dk: Math.abs(a.k - b.k), sub: [a.sub, b.sub]};
+  });
+  assert.ok(d.dd < 1e-6 && d.daz < 1e-6 && d.dk < 1e-9, JSON.stringify(d));
+  assert.equal(d.sub[0], d.sub[1]);
+});
+
+await test('callout labels stay between the side panels in every view (D-08)', async () => {
+  const views = [...['hero', 'operator', 'keyboard', 'side', 'top', 'typebars', 'impact', 'escapement', 'ribbon', 'carriage', 'rear', 'platen', 'inside'].map((c) => `Camera ${c}`), ...['key linkage', 'typebar basket', 'impact', 'ribbon lift', 'ribbon feed', 'universal bar', 'escapement', 'carriage', 'mainspring', 'shift', 'backspace', 'margin bell', 'carriage return', 'line spacing', 'platen', 'full explode'].map((x) => `Subsystem ${x}`)];
+  const bad = [];
+  for (const v of views) {
+    await clickBtn(page, v);
+    await settle(page, 1700);
+    const boxes = await L(page, () => {
+      const app = document.getElementById('app').getBoundingClientRect();
+      const s = LIVE.scale;
+      return [...document.querySelectorAll('.call')].filter((n) => parseFloat(n.style.opacity) > 0.02).map((n) => {
+        const r = n.getBoundingClientRect();
+        return {t: n.textContent, l: (r.left - app.left) / s, r: (r.right - app.left) / s};
+      });
+    });
+    for (const b of boxes) if (b.l < 298 || b.r > 1302) bad.push(`${v}: "${b.t}" ${b.l.toFixed(0)}–${b.r.toFixed(0)}`);
+  }
+  await clickBtn(page, 'REASSEMBLE');
+  await clickBtn(page, 'Camera hero');
+  assert.deepEqual(bad, []);
+});
+
 await test('controls are keyboard accessible with visible focus', async () => {
   await page.keyboard.press('Tab');
   const tag = await L(page, () => document.activeElement.tagName + ':' + (document.activeElement.getAttribute('aria-label') || ''));
@@ -347,6 +384,9 @@ for (const [w, h, name, extra] of [[1366, 768, 'laptop-1366'], [1280, 720, 'lapt
     const m = await o.page.evaluate(() => ({sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight, iw: innerWidth, ih: innerHeight, r: document.getElementById('app').getBoundingClientRect().toJSON()}));
     assert.ok(m.sw <= m.iw + 1 && m.sh <= m.ih + 1, `scroll ${m.sw}×${m.sh} in ${m.iw}×${m.ih}`);
     assert.ok(m.r.width <= m.iw + 1 && m.r.height <= m.ih + 1, 'stage fits');
+    // portrait phones get a readable hint to turn sideways; landscape and desktop do not (D-13)
+    const hint = await o.page.evaluate(() => getComputedStyle(document.getElementById('rotate-hint')).display);
+    assert.equal(hint, name === 'phone-portrait' ? 'block' : 'none', `rotate hint ${hint}`);
     if (extra?.touch) {
       await o.page.touchscreen.tap(m.iw / 2, m.ih / 2);
       await o.page.waitForTimeout(200);
@@ -357,9 +397,14 @@ for (const [w, h, name, extra] of [[1366, 768, 'laptop-1366'], [1280, 720, 'lapt
     await o.ctx.close();
   });
 }
-await test('reduced motion: the tour does not start by itself', async () => {
+await test('reduced motion: the tour does not start by itself, not even after 25 s of quiet (D-05)', async () => {
   const o = await open({reducedMotion: 'reduce'});
   assert.equal(await o.page.evaluate(() => LIVE.tour), false);
+  await o.page.evaluate(() => LIVE.idleFor(30));
+  await o.page.waitForTimeout(400);
+  assert.equal(await o.page.evaluate(() => LIVE.tour), false, 'tour started after idle');
+  await o.page.getByRole('button', {name: 'PLAY TOUR', exact: true}).click();
+  assert.equal(await o.page.evaluate(() => LIVE.tour), true, 'PLAY TOUR still starts it');
   assert.deepEqual(o.errors, []);
   await o.ctx.close();
 });

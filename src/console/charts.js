@@ -8,10 +8,21 @@ import {STRIKE_DEG} from '../model.js';
 const C = {ink: '#17181b', mute: '#8a8780', faint: '#cbc6bb', line: '#e2ddd2', acc: '#b07a22', key: '#3a6ea8', ribbon: '#a3262b', grey: '#5e636b'};
 const N = 72;
 const cache = new Map();
+// write markup only when it changed (the charts redraw every frame; at rest nothing changes) — D-14
+const last = new WeakMap();
+const put = (node, html, text = false) => {
+  if (last.get(node) === html) return;
+  last.set(node, html);
+  if (text) node.textContent = html;
+  else node.innerHTML = html;
+};
+// short escapement phase names for the chart header
+const ESC_SHORT = {'HELD ON LOOSE DOG': 'LOOSE DOG', 'HELD ON RIGID DOG': 'RIGID DOG', 'ROCKER TILTING': 'TILTING', 'ADVANCING ONE TOOTH': 'STEPPING', 'PINION FREEWHEELS': 'FREEWHEEL'};
 
 /** samples of the session over action i (cached per session id + action index) */
 function samples(S, i) {
-  const key = `${S.id}:${i}:${S.acts.length > i ? S.acts[i].t0 : 0}`;
+  const a0 = S.acts[i];
+  const key = `${S.id}:${i}:${a0 ? `${a0.t0}:${a0.type}:${a0.key ?? ''}` : 0}`; // D-17
   let v = cache.get(key);
   if (v) return v;
   const a = S.acts[i];
@@ -56,8 +67,8 @@ export function drawKeyChart(svg, info, leg, F) {
   let h = g.h;
   const s = F.s;
   if (!fol) {
-    svg.innerHTML = h + `<text x="${W / 2}" y="${H / 2}" font-size="8" text-anchor="middle" letter-spacing="1.4" fill="${C.mute}">PRESS A KEY</text>`;
-    info.textContent = 'IDLE';
+    put(svg, h + `<text x="${W / 2}" y="${H / 2}" font-size="8" text-anchor="middle" letter-spacing="1.4" fill="${C.mute}">PRESS A KEY</text>`);
+    put(info, 'IDLE', true);
     return;
   }
   const {a, out} = samples(F.session, fol.i);
@@ -78,9 +89,9 @@ export function drawKeyChart(svg, info, leg, F) {
   h += `<line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${g.Y0 - 4}" y2="${g.Y1}" stroke="${C.acc}" stroke-width="1.4"/>`;
   for (const [v, col] of [[keyN(s), C.key], [barN(s), C.ink], [ribN(s), C.ribbon]]) h += `<circle cx="${cx.toFixed(1)}" cy="${g.Y(v).toFixed(1)}" r="2.4" fill="${col}"/>`;
   h += `<text x="${g.X0}" y="${H - 5}" font-size="6.4" letter-spacing="1" fill="${C.mute}">0</text><text x="${g.X1}" y="${H - 5}" font-size="6.4" letter-spacing="1" text-anchor="end" fill="${C.mute}">${(a.dur * 1000).toFixed(0)} MS · ONE ${a.type === 'char' ? 'KEYSTROKE' : a.type.toUpperCase()}</text>`;
-  svg.innerHTML = h;
-  info.textContent = `P ${fol.p.toFixed(2)}`;
-  leg.innerHTML = `<span style="color:${C.key}">—</span> KEY <b>${(s.keyDepth || s.spaceDepth || s.backDepth).toFixed(1)}</b> MM &nbsp;<span style="color:${C.ink}">—</span> BAR <b>${s.barDeg.toFixed(0)}°</b> &nbsp;<span style="color:${C.ribbon}">—</span> RIBBON <b>${s.ribbonLift.toFixed(1)}</b>`;
+  put(svg, h);
+  put(info, `P ${fol.p.toFixed(2)}`, true);
+  put(leg, `<span style="color:${C.key}">—</span> KEY <b>${(s.keyDepth || s.spaceDepth || s.backDepth).toFixed(1)}</b> MM &nbsp;<span style="color:${C.ink}">—</span> BAR <b>${s.barDeg.toFixed(0)}°</b> &nbsp;<span style="color:${C.ribbon}">—</span> RIBBON <b>${s.ribbonLift.toFixed(1)}</b>`);
 }
 
 export function drawEscChart(svg, info, leg, F) {
@@ -90,8 +101,8 @@ export function drawEscChart(svg, info, leg, F) {
   const s = F.s;
   if (!fol) {
     const g = frame(W, H, 20, 18, []);
-    svg.innerHTML = g.h;
-    info.textContent = 'IDLE';
+    put(svg, g.h);
+    put(info, 'IDLE', true);
     return;
   }
   const {a, out} = samples(F.session, fol.i);
@@ -126,7 +137,7 @@ export function drawEscChart(svg, info, leg, F) {
   h += `<line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${g.Y0 - 4}" y2="${g.Y1}" stroke="${C.acc}" stroke-width="1.4"/>`;
   h += `<circle cx="${cx.toFixed(1)}" cy="${yN(s.colPos - c0).toFixed(1)}" r="2.6" fill="${C.ink}"/><circle cx="${cx.toFixed(1)}" cy="${yN(s.wheel - w0).toFixed(1)}" r="2" fill="${C.key}"/><circle cx="${cx.toFixed(1)}" cy="${g.Y(s.ub * 0.45).toFixed(1)}" r="2" fill="${C.grey}"/>`;
   h += `<text x="${g.X1}" y="${H - 5}" font-size="6.4" letter-spacing="1" text-anchor="end" fill="${C.mute}">${a.type === 'ret' ? 'CARRIAGE RETURN' : a.type === 'backspace' ? 'BACKSPACE' : 'ONE STROKE'} · COL ${c0} → ${a.after.col}</text>`;
-  svg.innerHTML = h;
-  info.textContent = s.escPhase.replace('HELD ON ', '');
-  leg.innerHTML = `<span style="color:${C.ink}">—</span> CARR <b>${(s.colPos - c0).toFixed(2)}</b> &nbsp;<span style="color:${C.key}">—</span> WHEEL <b>${(s.wheel - w0).toFixed(2)}</b> &nbsp;<span style="color:${C.grey}">—</span> ROCKER <b>${s.rockerDeg.toFixed(1)}°</b>`;
+  put(svg, h);
+  put(info, ESC_SHORT[s.escPhase] || s.escPhase, true); // D-15: fits beside the title
+  put(leg, `<span style="color:${C.ink}">—</span> CARR <b>${(s.colPos - c0).toFixed(2)}</b> &nbsp;<span style="color:${C.key}">—</span> WHEEL <b>${(s.wheel - w0).toFixed(2)}</b> &nbsp;<span style="color:${C.grey}">—</span> ROCKER <b>${s.rockerDeg.toFixed(1)}°</b>`);
 }

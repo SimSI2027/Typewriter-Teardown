@@ -13,6 +13,7 @@ const S = 0.78;
 const X = (z) => 10 + (z + 70) * S;
 const Y = (y) => 198 - (y - 28) * S;
 const f = (v) => v.toFixed(1);
+const lastSvg = new WeakMap();
 
 export function drawSchematic(svg, info, F) {
   const s = F.s;
@@ -78,7 +79,7 @@ export function drawSchematic(svg, info, F) {
   const lab = (x, y, t, anchor = 'start') => (h += `<text x="${f(x)}" y="${f(y)}" font-size="6.4" letter-spacing=".9" text-anchor="${anchor}" fill="${C.mute}">${t}</text>`);
   lab(X(pz) - 2, Y(py) - PLATEN.r * S - 4, 'PLATEN', 'middle');
   lab(X(key.z) + 8, Y(key.y - depth) + 2, `KEY ${key.up}`);
-  lab(X(KEYS.fulcrumZ), Y(KEYS.leverY) + 10, 'FULCRUM', 'middle');
+  lab(X(KEYS.fulcrumZ) - 3, Y(KEYS.leverY) + 10, 'FULCRUM'); // D-15: no longer clipped at the panel edge
   lab(X(segZ) + 6, Y(SEG_Y) + 12, 'SEGMENT');
   lab(X(sl.pivot[2]) - 4, Y(sl.pivot[1]) - 5, 'SUBLEVER', 'end');
   lab(X(RIBBON.z) + 6, Y(rTop) - 2, 'RIBBON');
@@ -98,17 +99,21 @@ export function drawSchematic(svg, info, F) {
   h += `<path d="${star}Z" fill="#fff" stroke="${hot(s.escPhase !== 'HELD ON LOOSE DOG')}" stroke-width=".9"/>`;
   h += `<circle cx="${ex}" cy="${ey + 2}" r="2" fill="${C.ink}"/>`;
   // dogs below the wheel: drawn in or out of the wheel plane (solid in, faint out)
-  const dog = (dx, inPlane, label) => {
+  const dog = (dx, inPlane, label, side) => {
     const op = 0.25 + 0.75 * inPlane;
-    h += `<rect x="${f(ex + dx - 2)}" y="${f(ey + 2 + R - 2)}" width="4" height="9" fill="${C.ink}" opacity="${op.toFixed(2)}"/><text x="${f(ex + dx)}" y="${f(ey + 2 + R + 15)}" font-size="5.6" text-anchor="middle" fill="${C.mute}">${label}</text>`;
+    // labels outboard of their dog (the two dogs sit 13 px apart) — D-15
+    h += `<rect x="${f(ex + dx - 2)}" y="${f(ey + 2 + R - 2)}" width="4" height="9" fill="${C.ink}" opacity="${op.toFixed(2)}"/><text x="${f(ex + dx + side * 4)}" y="${f(ey + 2 + R + 15)}" font-size="5.6" text-anchor="${side < 0 ? 'end' : 'start'}" fill="${C.mute}">${label}</text>`;
   };
-  dog(-6 + s.dogCarry * 6, 1 - s.looseDog, 'LOOSE');
-  dog(7, s.rigidDog, 'RIGID');
+  dog(-6 + s.dogCarry * 6, 1 - s.looseDog, 'LOOSE', -1);
+  dog(7, s.rigidDog, 'RIGID', 1);
   // carriage direction
   const moving = s.action && Math.abs(s.colPos - Math.round(s.colPos)) > 0.002;
   const dir = s.action === 'ret' || s.action === 'backspace' ? 1 : -1;
   if (moving) h += `<path d="M${ex - 14} ${ey - 18} h28" stroke="${C.acc}" stroke-width="1.3"/><path d="M${dir > 0 ? ex + 14 : ex - 14} ${ey - 18} l${-dir * 5} -3 v6z" fill="${C.acc}"/>`;
-  svg.innerHTML = h;
+  if (lastSvg.get(svg) !== h) {
+    lastSvg.set(svg, h);
+    svg.innerHTML = h; // D-14: only when the drawing changed
+  }
   info.textContent = `KEY ${key.up} · SLOT ${key.slot + 1}`;
 }
 export {CARRIAGE};

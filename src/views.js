@@ -137,23 +137,35 @@ export const TRANSITION = VIEW_T; // seconds for a view change
  * the fields; unset fields carry over. Returns {cam, look, camId, sub, xray, cutaway, k}.
  */
 export function viewAt(events, t, EXP, camOverride) {
-  let cur = {cam: 'hero', sub: null, xray: false, cutaway: false, t: -1e9};
-  let prev = cur;
+  // the implicit starting view, anchored to the first event (so shifting every event in time shifts it too)
+  let cur = {cam: 'hero', sub: null, xray: false, cutaway: false, t: (events.length ? events[0].t : 0) - 1e9};
+  // where the running transition starts from: a settled view (its camera keeps drifting), or — when a change arrived
+  // before the previous one finished — the blended look and camera of that instant, so nothing jumps (D-06)
+  let from = {v: cur};
+  const lookOf = (v) => viewLook(v.sub, v);
+  const stateAt = (at) => {
+    const k = ease((at - cur.t) / TRANSITION);
+    const cb = camAt(cur.cam, at - cur.t);
+    if (k >= 1) return {k, look: lookOf(cur), cam: cb};
+    const fl = from.v ? lookOf(from.v) : from.look;
+    const fc = from.v ? camAt(from.v.cam, at - from.v.t) : from.cam;
+    return {k, look: blendLook(fl, lookOf(cur), k, EXP), cam: blendCam(fc, cb, k)};
+  };
   for (const e of events) {
     if (e.t > t) break;
-    prev = cur;
+    if (e.t - cur.t >= TRANSITION) from = {v: cur};
+    else {
+      const st = stateAt(e.t);
+      from = {look: st.look, cam: st.cam};
+    }
     cur = {...cur, ...e, t: e.t};
     if (e.sub && !e.cam) cur.cam = SUBSYSTEMS[e.sub]?.cam || cur.cam;
     if (e.sub === 'reassemble') cur.sub = null;
   }
-  const k = ease((t - cur.t) / TRANSITION);
-  const lookOf = (v) => viewLook(v.sub, v);
-  const look = k >= 1 ? lookOf(cur) : blendLook(lookOf(prev), lookOf(cur), k, EXP);
-  const ca = camAt(prev.cam, t - prev.t);
-  const cb = camAt(cur.cam, t - cur.t);
-  let cam = k >= 1 ? cb : blendCam(ca, cb, k);
-  if (camOverride) cam = camOverride(cam, cur, k);
-  return {cam, look, camId: cur.cam, sub: cur.sub, xray: cur.xray, cutaway: cur.cutaway, k, since: t - cur.t};
+  const st = stateAt(t);
+  let cam = st.cam;
+  if (camOverride) cam = camOverride(cam, cur, st.k);
+  return {cam, look: st.look, camId: cur.cam, sub: cur.sub, xray: cur.xray, cutaway: cur.cutaway, k: st.k, since: t - cur.t};
 }
 
 /** the working-now accent for each assembly, from the model state (0..1) */

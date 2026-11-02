@@ -155,7 +155,8 @@ function resolve(req, s) {
       a.value = [1, 2, 3].includes(req.value) ? req.value : (s.spacing % 3) + 1;
       return a;
     case 'color':
-      a.value = ['black', 'red', 'stencil'].includes(req.value) ? req.value : s.color === 'black' ? 'red' : 'black';
+      // the colour selector's three positions in turn: black → red → stencil (no lift, no ink) — D-12
+      a.value = ['black', 'red', 'stencil'].includes(req.value) ? req.value : {black: 'red', red: 'stencil', stencil: 'black'}[s.color] || 'black';
       return a;
     case 'release':
       return a;

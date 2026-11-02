@@ -141,32 +141,47 @@ export function buildFrame(mats, nodes) {
   nodes.hood.push(hood);
   root.add(hood);
   mesh(extrudeOutline(hoodPts, 7, [], 1.2, 8), m('hood', 'iron'), [0, 0, hz], null, hood);
+  // drawn in millimetres on the panel (372 × 72 mm, top edge at y 196): a pinstripe that follows the arch and the
+  // panel edge, and the name — small, centred under the arch between two gold scrolls, as on the reference machine
+  // (the name spans about a fifth of the frame width there). ESTIMATED proportions — D-11.
+  const HW = R.sideX * 2;
+  const HH = 72;
   const hoodDecal = decal(2048, 640, (g, w, h) => {
-    // a gold border following the arch, the name in the band below it
+    g.save();
+    g.scale(w / HW, h / HH);
     g.strokeStyle = GOLD;
-    g.lineWidth = 5;
+    g.lineCap = 'round';
+    g.lineWidth = 0.7;
+    // panel border, broken by the arch (arch: centre at the top edge, 150 × 46 mm; stripe 5 mm outside it)
     g.beginPath();
-    g.moveTo(40, h - 40);
-    g.lineTo(w - 40, h - 40);
-    g.lineTo(w - 40, 30);
-    g.lineTo(w - 140, 30);
-    g.ellipse(w / 2, 30, w / 2 - 140, 300, 0, 0, Math.PI, false);
-    g.lineTo(40, 30);
+    g.moveTo(5, HH - 5);
+    g.lineTo(5, 5);
+    g.lineTo(HW / 2 - 155, 5);
+    g.ellipse(HW / 2, 0, 155, 51, 0, Math.PI, 0, true);
+    g.lineTo(HW - 5, 5);
+    g.lineTo(HW - 5, HH - 5);
     g.closePath();
     g.stroke();
-    g.lineWidth = 2;
-    g.beginPath();
-    g.ellipse(w / 2, 30, w / 2 - 170, 330, 0, 0.12, Math.PI - 0.12, false);
-    g.stroke();
-    goldText(g, 'UNDERWOOD', w / 2, h - 150, 150, 800, 18);
-    // two small roundels left and right of the name
-    for (const x of [300, w - 300]) {
+    // two scrolls rising from the name toward the arch
+    g.lineWidth = 0.55;
+    for (const sx of [-1, 1]) {
       g.beginPath();
-      g.ellipse(x, h - 150, 86, 56, 0, 0, Math.PI * 2);
-      g.lineWidth = 4;
+      g.moveTo(HW / 2 + sx * 50, 60);
+      g.quadraticCurveTo(HW / 2 + sx * 74, 60, HW / 2 + sx * 86, 51);
       g.stroke();
-      goldText(g, 'No 5', x, h - 148, 46, 800, 2);
+      g.beginPath();
+      g.arc(HW / 2 + sx * 86 + sx * 1.6, 51, 1.6, 0, Math.PI * 2);
+      g.stroke();
     }
+    g.restore();
+    // the name: about 84 mm wide, 8 mm cap height, drawn in pixels so the letter shapes are not stretched
+    const pxX = w / HW;
+    const pxY = h / HH;
+    g.save();
+    g.translate(w / 2, 61 * pxY);
+    g.scale(1, pxY / pxX);
+    goldText(g, "UNDERWOOD", 0, 0, 10.5 * pxX, 800, 0.9 * pxX);
+    g.restore();
   });
   const hd = mesh(new THREE.PlaneGeometry(R.sideX * 2, 72), m('hood', 'decal', {key: 'hood', map: hoodDecal}), [0, 160, hz + 4.6], null, hood);
   hd.castShadow = false;

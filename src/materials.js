@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 
 export const ACCENT = new THREE.Color('#c8922e'); // warm brass: the part doing the work right now
+const GHOST = new THREE.Color('#bdb7ab'); // the pale tint ghosted assemblies take
 
 const BASE = {
   iron: () => new THREE.MeshPhysicalMaterial({color: '#141416', roughness: 0.46, metalness: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.32, envMapIntensity: 0.85}),
@@ -58,7 +59,7 @@ export function createMaterials() {
       mat.emissive.copy(b.emissive).lerp(ACCENT, mat.userData.noAccent ? 0 : accent * 0.36);
       mat.emissiveIntensity = 1;
       if (mat.userData.ghostColor === undefined) mat.userData.ghostColor = mat.color.clone();
-      mat.color.copy(mat.userData.ghostColor).lerp(new THREE.Color('#bdb7ab'), ghost * 0.35);
+      mat.color.copy(mat.userData.ghostColor).lerp(GHOST, ghost * 0.35);
     }
   };
   return {m, setGroupLook, bank, byGroup};

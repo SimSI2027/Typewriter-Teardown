@@ -45,6 +45,26 @@ const CSS = `
 // a pointer press must not leave a console control focused: the visitor's next Space or Enter belongs to the
 // typewriter, not to the button last clicked (keyboard Tab focus is unaffected)
 const noPointerFocus = (n) => n.addEventListener('mousedown', (e) => e.preventDefault());
+// the width (px) of a callout label as drawn (.call b / .call span), measured once per text
+const LABEL_W = new Map();
+let measureCtx = null;
+export function labelWidth(name, sub) {
+  const key = `${name}|${sub}`;
+  let w = LABEL_W.get(key);
+  if (w != null) return w;
+  measureCtx ||= document.createElement('canvas').getContext('2d');
+  const g = measureCtx;
+  const width = (font, spacing, text) => {
+    g.font = font;
+    if ('letterSpacing' in g) g.letterSpacing = `${spacing}px`;
+    return g.measureText(text).width + ('letterSpacing' in g ? 0 : spacing * text.length);
+  };
+  w = Math.max(width('600 12px Inter', 0.1, name), sub ? width('600 8.6px Inter', 1.4, sub.toUpperCase()) : 0) + 10;
+  LABEL_W.set(key, w);
+  return w;
+}
+// the free stage between the side panels (callout labels stay inside it)
+const FREE = [302, 1298];
 const el = (h) => {
   const d = document.createElement('div');
   d.innerHTML = h.trim();
@@ -359,10 +379,12 @@ export function createConsole(app) {
     for (const c of F.callouts || []) {
       if (!c.at || c.o < 0.02) continue;
       const [ax, ay] = c.at;
-      const [lx, ly] = c.label;
       const right = c.align === 'right';
+      const tw = labelWidth(c.name, c.sub);
+      // the whole label box stays between the panels (D-08)
+      const lx = right ? Math.min(FREE[1] - 8 - tw, Math.max(FREE[0], c.label[0])) : Math.max(FREE[0] + 8 + tw, Math.min(FREE[1], c.label[0]));
+      const ly = c.label[1];
       const ex = right ? lx + 6 : lx - 6;
-      const tw = Math.max(c.name.length * 6.6, c.sub.length * 5.6);
       const ux = right ? lx + 8 + tw : lx - 8 - tw;
       lh += `<polyline points="${ax.toFixed(1)},${ay.toFixed(1)} ${ex.toFixed(1)},${(ly + 15).toFixed(1)} ${ux.toFixed(1)},${(ly + 15).toFixed(1)}" fill="none" stroke="${c.hot ? C.acc : C.mute}" stroke-width=".8" opacity="${c.o.toFixed(2)}"/><circle cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="2.2" fill="${c.hot ? C.acc : C.ink}" opacity="${c.o.toFixed(2)}"/>`;
       chh += `<div class="call" style="${right ? `left:${(lx + 8).toFixed(1)}px` : `right:${(1600 - lx + 8).toFixed(1)}px;text-align:right`};top:${(ly - 12).toFixed(1)}px;opacity:${c.o.toFixed(2)}"><b style="color:${c.hot ? C.acc : C.ink}">${c.name}</b><span>${c.sub}</span></div>`;
