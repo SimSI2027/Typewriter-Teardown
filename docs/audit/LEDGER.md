@@ -151,3 +151,19 @@ action stills show keys, bars, ribbon, carriage and bell moving inside isolated 
 | LINE SPACING | return lever steps out left; platen and paper kept | yes | 0 | pass |
 | PLATEN | platen and paper lift out of the carriage; return lever steps up out of the way | yes | 0 | pass |
 | FULL EXPLODE | staged, in assembly order: hood, bars, ribbon, carriage stack, rails, bell, mainspring, backspace, keys; the key-lever skeleton, links, universal bar and escapement stay (captive) | n/a (all solid) | 0 | pass |
+
+## 8. Final verification
+
+| Check | Result |
+|---|---|
+| `npm test` | 56 / 56 |
+| `npm run test:e2e` (production build, `/Typewriter-Teardown/` and `/`) | 30 / 30 |
+| Interference, all 16 subsystem poses at 25/50/75/100 % | 0 (`after/obb-collisions.txt`) |
+| Page errors during all captures | none (`after/errors.json`) |
+| Push | `3ed1e1e..69da6d4` |
+| Actions run 41387391328 (commit 69da6d4) | success |
+| Live `version.json` | commit `69da6d4…`, bundle `app-7a8e360634.js` = local build |
+| e2e against the live site | 29 / 29 (`after/e2e-live.txt`) |
+| Live probes | reduced motion holds, no view jumps, return sound 30 voices, no errors (`after/liveprobe-live.json`) |
+
+Every finding has a disposition. Open items: none; deferred with reasons: D-13 (portrait layout), D-19, D-22.

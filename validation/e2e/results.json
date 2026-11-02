@@ -1,26 +1,26 @@
 {
- "date": "2026-11-02T04:14:18.627Z",
- "base": "http://127.0.0.1:51057/Typewriter-Teardown/",
+ "date": "2026-11-02T04:17:12.111Z",
+ "base": "https://simsi2027.github.io/Typewriter-Teardown/",
  "results": [
   {
    "name": "loads under the Pages base path with the tour running, no errors",
    "ok": true,
-   "ms": 119
+   "ms": 122
   },
   {
    "name": "bundle has no local-path dependencies and the entry HTML is small",
    "ok": true,
-   "ms": 1
+   "ms": 0
   },
   {
    "name": "a click hands the machine to the visitor; the tour paper carries over",
    "ok": true,
-   "ms": 1852
+   "ms": 1849
   },
   {
    "name": "physical typing prints at the carriage position; space, backspace, return",
    "ok": true,
-   "ms": 1604
+   "ms": 1606
   },
   {
    "name": "shift (held) prints upper case through carriage shift; caps lock locks it",
@@ -30,87 +30,87 @@
   {
    "name": "unsupported characters fail safely",
    "ok": true,
-   "ms": 411
+   "ms": 416
   },
   {
    "name": "clicking the visible typewriter keys types them",
    "ok": true,
-   "ms": 1989
+   "ms": 2000
   },
   {
    "name": "a mouse-clicked console button keeps no focus: Space and Enter still reach the typewriter (D-01)",
    "ok": true,
-   "ms": 1117
+   "ms": 1124
   },
   {
    "name": "every subsystem button isolates its assembly; reassemble restores",
    "ok": true,
-   "ms": 5378
+   "ms": 5256
   },
   {
    "name": "every camera button moves to its view",
    "ok": true,
-   "ms": 2679
+   "ms": 2639
   },
   {
    "name": "x-ray and cutaway toggle",
    "ok": true,
-   "ms": 1817
+   "ms": 1858
   },
   {
    "name": "machine buttons: return, spacing, ribbon colour, lock",
    "ok": true,
-   "ms": 2809
+   "ms": 2823
   },
   {
    "name": "pause, resume, step, slow motion, speed, timeline scrub",
    "ok": true,
-   "ms": 750
+   "ms": 748
   },
   {
    "name": "reset clears the sheet and returns the carriage",
    "ok": true,
-   "ms": 422
+   "ms": 421
   },
   {
    "name": "sound: mute toggles, volume slider",
    "ok": true,
-   "ms": 205
+   "ms": 206
   },
   {
    "name": "panels hide and show (button and Esc)",
    "ok": true,
-   "ms": 92
+   "ms": 91
   },
   {
    "name": "all quality modes render without errors",
    "ok": true,
-   "ms": 2497
+   "ms": 2464
   },
   {
    "name": "orbit and zoom",
    "ok": true,
-   "ms": 483
+   "ms": 476
   },
   {
    "name": "tour button and chip restart the tour; inactivity resumes it, never mid-drag",
    "ok": true,
-   "ms": 735
+   "ms": 730
   },
   {
    "name": "taking over in the middle of a tour view change continues it without a jump (D-07)",
    "ok": true,
-   "ms": 464
+   "ms": 461
   },
   {
    "name": "callout labels stay between the side panels in every view (D-08)",
    "ok": true,
-   "ms": 52598
+   "ms": 52672
   },
   {
    "name": "controls are keyboard accessible with visible focus",
    "ok": true,
-   "ms": 3
+   "ms": 2
   },
   {
    "name": "no console errors or failed requests during the session",
@@ -120,37 +120,32 @@
   {
    "name": "layout laptop-1366 (1366×768): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 970
+   "ms": 1104
   },
   {
    "name": "layout laptop-1280 (1280×720): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 931
+   "ms": 1108
   },
   {
    "name": "layout desktop-1080p (1920×1080): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 991
+   "ms": 1023
   },
   {
    "name": "layout phone-landscape (844×390): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1171
+   "ms": 1136
   },
   {
    "name": "layout phone-portrait (390×844): fits, no page scroll, no errors",
    "ok": true,
-   "ms": 1128
+   "ms": 1178
   },
   {
    "name": "reduced motion: the tour does not start by itself, not even after 25 s of quiet (D-05)",
    "ok": true,
-   "ms": 1274
-  },
-  {
-   "name": "also works at the site root (base-path independent assets)",
-   "ok": true,
-   "ms": 918
+   "ms": 1301
   }
  ]
 }

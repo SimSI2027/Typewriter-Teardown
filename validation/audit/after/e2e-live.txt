@@ -1,0 +1,31 @@
+✔ loads under the Pages base path with the tour running, no errors
+✔ bundle has no local-path dependencies and the entry HTML is small
+✔ a click hands the machine to the visitor; the tour paper carries over
+✔ physical typing prints at the carriage position; space, backspace, return
+✔ shift (held) prints upper case through carriage shift; caps lock locks it
+✔ unsupported characters fail safely
+✔ clicking the visible typewriter keys types them
+✔ a mouse-clicked console button keeps no focus: Space and Enter still reach the typewriter (D-01)
+✔ every subsystem button isolates its assembly; reassemble restores
+✔ every camera button moves to its view
+✔ x-ray and cutaway toggle
+✔ machine buttons: return, spacing, ribbon colour, lock
+✔ pause, resume, step, slow motion, speed, timeline scrub
+✔ reset clears the sheet and returns the carriage
+✔ sound: mute toggles, volume slider
+✔ panels hide and show (button and Esc)
+✔ all quality modes render without errors
+✔ orbit and zoom
+✔ tour button and chip restart the tour; inactivity resumes it, never mid-drag
+✔ taking over in the middle of a tour view change continues it without a jump (D-07)
+✔ callout labels stay between the side panels in every view (D-08)
+✔ controls are keyboard accessible with visible focus
+✔ no console errors or failed requests during the session
+✔ layout laptop-1366 (1366×768): fits, no page scroll, no errors
+✔ layout laptop-1280 (1280×720): fits, no page scroll, no errors
+✔ layout desktop-1080p (1920×1080): fits, no page scroll, no errors
+✔ layout phone-landscape (844×390): fits, no page scroll, no errors
+✔ layout phone-portrait (390×844): fits, no page scroll, no errors
+✔ reduced motion: the tour does not start by itself, not even after 25 s of quiet (D-05)
+
+29/29 passed
