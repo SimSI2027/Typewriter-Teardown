@@ -275,10 +275,16 @@ await test('reset clears the sheet and returns the carriage', async () => {
 });
 
 await test('sound: mute toggles, volume slider', async () => {
-  await clickBtn(page, 'SOUND ON');
+  const mute = page.locator('button[data-k="mute"]');
+  const label = (t) => page.waitForFunction((t) => document.querySelector('button[data-k="mute"]').textContent === t, t, {timeout: 3000});
+  if ((await mute.textContent()) === 'ENABLE SOUND') await mute.click(); // a gesture already unlocked it in most browsers
+  await label('SOUND ON');
+  await mute.click();
   assert.equal(await L(page, () => LIVE.muted), true);
-  await clickBtn(page, 'SOUND OFF');
+  await label('SOUND OFF');
+  await mute.click();
   assert.equal(await L(page, () => LIVE.muted), false);
+  await label('SOUND ON');
   const v = await page.locator('[aria-label="VOLUME"]').boundingBox();
   await page.mouse.click(v.x + v.width * 0.25, v.y + v.height / 2);
   const vol = await L(page, () => LIVE.volume);

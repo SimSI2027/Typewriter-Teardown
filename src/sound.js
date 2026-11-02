@@ -109,8 +109,8 @@ function voices(ctx, out) {
       flt.frequency.linearRampToValueAtTime(640, t + dur);
       const gg = ctx.createGain();
       gg.gain.setValueAtTime(0.0001, t);
-      gg.gain.linearRampToValueAtTime(0.13 * g, t + dur * 0.25);
-      gg.gain.linearRampToValueAtTime(0.1 * g, t + dur * 0.8);
+      gg.gain.linearRampToValueAtTime(0.24 * g, t + dur * 0.25);
+      gg.gain.linearRampToValueAtTime(0.18 * g, t + dur * 0.8);
       gg.gain.linearRampToValueAtTime(0.0001, t + dur);
       src.connect(flt).connect(gg).connect(out);
       src.start(t, 0.2, dur + 0.05);
@@ -119,7 +119,7 @@ function voices(ctx, out) {
         // carriage travel eases in and out: clicks bunch in the middle, as the pinion spins fastest there
         const u = (i + 0.5) / clicks;
         const tt = t + dur * (0.5 - Math.cos(Math.PI * u) / 2) ** 0.9;
-        burst(tt, {f: 4800, q: 9, a: 0.0003, d: 0.006, gain: 0.07 * g, pan: 0.05});
+        burst(tt, {f: 4800, q: 9, a: 0.0003, d: 0.006, gain: 0.12 * g, pan: 0.05});
       }
     },
     marginStop: (t, g) => {
@@ -141,48 +141,146 @@ function voices(ctx, out) {
   };
 }
 
+// The live sound engine and its lifecycle. Browsers keep audio off until the visitor's first gesture (a press, a key,
+// a tap): until then the engine reports 'locked' and the page says so (ENABLE SOUND) instead of pretending. unlock()
+// is called from every gesture; it creates or resumes the AudioContext only while the browser counts the event as a
+// user activation, so it never trips the autoplay warning. Mute and volume are the visitor's settings: they survive
+// the unlock, a hidden tab and a reload (localStorage, best effort). A meter taps the final mix just before the
+// speakers, so the page (and the tests) can tell real output from silence.
+//
+//   state   'unavailable'  no Web Audio in this browser
+//           'locked'       waiting for a gesture (no context yet, or the browser has not let it start)
+//           'running'      sound reaches the speakers (unless muted)
+//           'suspended'    paused by the page while the tab is hidden
+const STORE = 'typewriter-teardown.sound';
+const readPrefs = () => {
+  try {
+    const p = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (p && typeof p.muted === 'boolean' && typeof p.volume === 'number') return {muted: p.muted, volume: Math.min(1, Math.max(0, p.volume))};
+  } catch {
+    /* storage blocked: defaults */
+  }
+  return {muted: false, volume: 0.7};
+};
+const writePrefs = (p) => {
+  try {
+    localStorage.setItem(STORE, JSON.stringify(p));
+  } catch {
+    /* storage blocked: the setting lasts for this visit */
+  }
+};
+
 export function createSound() {
+  const AC = typeof window !== 'undefined' ? window.AudioContext || window.webkitAudioContext : null;
   let ctx = null;
   let master = null;
+  let meter = null;
+  let meterBuf = null;
   let play = null;
-  let muted = false;
-  let volume = 0.7;
-  const ensure = () => {
-    if (ctx) return ctx;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    ctx = new AC({latencyHint: 'interactive'});
+  let {muted, volume} = readPrefs();
+  let hiddenSuspend = false; // the page suspended a running context (tab hidden); it resumes it when visible
+  const stats = {played: 0, byKind: {}, peak: 0, lastLoud: -1, failures: 0};
+  const activation = () => (typeof navigator !== 'undefined' && navigator.userActivation ? navigator.userActivation.isActive : true);
+  const create = () => {
+    try {
+      ctx = new AC({latencyHint: 'interactive'});
+    } catch {
+      stats.failures++;
+      ctx = null;
+      return null;
+    }
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14;
     comp.ratio.value = 3;
+    // makeup gain into a brick-wall limiter: sparse clacks read at a comfortable level without ever clipping
+    const makeup = ctx.createGain();
+    makeup.gain.value = 1.4; // +3 dB
+    const limit = ctx.createDynamicsCompressor();
+    limit.threshold.value = -5;
+    limit.knee.value = 0;
+    limit.ratio.value = 20;
+    limit.attack.value = 0.001;
+    limit.release.value = 0.08;
     master = ctx.createGain();
     master.gain.value = muted ? 0 : volume;
-    master.connect(comp).connect(ctx.destination);
+    master.connect(comp).connect(makeup).connect(limit).connect(ctx.destination);
+    meter = ctx.createAnalyser();
+    meter.fftSize = 1024;
+    meterBuf = new Float32Array(meter.fftSize);
+    limit.connect(meter);
     play = voices(ctx, master);
     return ctx;
   };
-  return {
-    /** call from a user gesture (browsers block audio until one) */
+  const gainTo = (v) => {
+    if (master) master.gain.setTargetAtTime(v, ctx.currentTime, 0.02);
+  };
+  const S = {
+    /** from a visitor gesture: create or resume the context (only while the browser counts it as an activation) */
     unlock() {
-      const c = ensure();
-      if (c && c.state === 'suspended') c.resume().catch(() => {});
+      if (!AC) return;
+      if (!activation()) return;
+      if (!ctx && !create()) return;
+      hiddenSuspend = false;
+      if (ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => stats.failures++);
+    },
+    get state() {
+      if (!AC) return 'unavailable';
+      if (!ctx || ctx.state === 'closed') return 'locked';
+      if (ctx.state === 'running') return 'running';
+      return hiddenSuspend ? 'suspended' : 'locked';
+    },
+    /** what the visitor hears: 'on', 'off' (muted), 'locked' (needs a gesture), 'none' (no Web Audio) */
+    get status() {
+      const st = S.state;
+      if (st === 'unavailable') return 'none';
+      if (muted) return 'off';
+      return st === 'running' ? 'on' : 'locked';
     },
     get ready() {
-      return !!ctx && ctx.state === 'running';
+      return S.state === 'running';
     },
     /** schedule cues; each cue's offset is seconds from now */
     schedule(cues) {
-      if (!ctx || ctx.state !== 'running' || muted) return;
+      if (!ctx || ctx.state !== 'running' || muted) return 0;
       const now = ctx.currentTime + 0.025;
-      for (const c of cues) play(c, now + Math.max(0, c.offset));
+      for (const c of cues) {
+        play(c, now + Math.max(0, c.offset));
+        stats.played++;
+        stats.byKind[c.kind] = (stats.byKind[c.kind] || 0) + 1;
+      }
+      return cues.length;
+    },
+    /** read the meter once per frame: the peak of the final mix over the last ~21 ms */
+    sample() {
+      if (!meter || ctx.state !== 'running') return 0;
+      meter.getFloatTimeDomainData(meterBuf);
+      let pk = 0;
+      for (let i = 0; i < meterBuf.length; i++) {
+        const v = Math.abs(meterBuf[i]);
+        if (v > pk) pk = v;
+      }
+      stats.peak = pk;
+      if (pk > 0.002) stats.lastLoud = ctx.currentTime;
+      return pk;
+    },
+    get stats() {
+      return stats;
+    },
+    get time() {
+      return ctx ? ctx.currentTime : 0;
+    },
+    get gain() {
+      return master ? master.gain.value : 0;
     },
     setMuted(m) {
-      muted = m;
-      if (master) master.gain.setTargetAtTime(m ? 0 : volume, ctx.currentTime, 0.02);
+      muted = !!m;
+      gainTo(muted ? 0 : volume);
+      writePrefs({muted, volume});
     },
     setVolume(v) {
       volume = Math.min(1, Math.max(0, v));
-      if (master && !muted) master.gain.setTargetAtTime(volume, ctx.currentTime, 0.02);
+      if (!muted) gainTo(volume);
+      writePrefs({muted, volume});
     },
     get muted() {
       return muted;
@@ -190,13 +288,22 @@ export function createSound() {
     get volume() {
       return volume;
     },
+    /** the tab was hidden: stop the clock (and any tail) until it is visible again */
     suspend() {
-      if (ctx && ctx.state === 'running') ctx.suspend().catch(() => {});
+      if (ctx && ctx.state === 'running') {
+        hiddenSuspend = true;
+        ctx.suspend().catch(() => {});
+      }
     },
+    /** the tab is visible again: resume only what the page itself suspended (no gesture needed for that) */
     resume() {
-      if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+      if (ctx && hiddenSuspend) {
+        hiddenSuspend = false;
+        ctx.resume().catch(() => stats.failures++);
+      }
     },
   };
+  return S;
 }
 
 /** render cues [{t (seconds), kind, gain, pitch, ...}] to a 48 kHz stereo WAV (bytes) offline */

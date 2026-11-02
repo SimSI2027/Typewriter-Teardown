@@ -38,6 +38,7 @@ export async function runFilm() {
           vol: {k: 0.7, text: '70 %'},
         },
         viewSub: '',
+        sound: 'on',
       },
     });
   };

@@ -90,7 +90,7 @@ export function createConsole(app) {
   const btn = {};
   // the accessible name is the visible text; camera and subsystem buttons that share a word get a distinct name
   const mkBtn = (key, label, x, y, w, extra = '', aria = '') => {
-    const b = el(`<button class="tb pnl" type="button" style="left:${x}px;top:${y}px;width:${w}px;${extra}"${aria ? ` aria-label="${aria}"` : ''}>${label}</button>`);
+    const b = el(`<button class="tb pnl" type="button" data-k="${key}" style="left:${x}px;top:${y}px;width:${w}px;${extra}"${aria ? ` aria-label="${aria}"` : ''}>${label}</button>`);
     ui.appendChild(b);
     noPointerFocus(b);
     btn[key] = b;
@@ -345,8 +345,16 @@ export function createConsole(app) {
       sl.el.setAttribute('aria-valuetext', v.text);
     }
     setClass(btn.slow, 'acc', F.slow);
-    setText(btn.mute, F.muted ? 'SOUND OFF' : 'SOUND ON');
-    setClass(btn.mute, 'on', !F.muted);
+    // the sound button says what the visitor hears: ENABLE SOUND until a gesture has started audio (never SOUND ON
+    // over a context the browser has not let run), then SOUND ON / SOUND OFF
+    const snd = F.sound || (F.muted ? 'off' : 'on');
+    setText(btn.mute, {on: 'SOUND ON', off: 'SOUND OFF', locked: 'ENABLE SOUND', none: 'NO AUDIO'}[snd]);
+    setClass(btn.mute, 'on', snd === 'on');
+    setClass(btn.mute, 'acc', snd === 'locked');
+    if (memo.get(btn.mute) !== snd) {
+      memo.set(btn.mute, snd);
+      btn.mute.disabled = snd === 'none';
+    }
     for (const [k] of QN) setClass(btn['q_' + k], 'on', F.quality === k);
     setText(btn.panels, F.panels ? 'HIDE PANELS' : 'SHOW PANELS');
     setText(btn.tour, F.tour ? 'STOP TOUR' : 'PLAY TOUR');

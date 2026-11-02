@@ -17,6 +17,8 @@ const W = 1600;
 const H = 900;
 const IDLE = 25;
 const MAX_BACKLOG = 8; // seconds of queued machine time before further typing is refused
+const LOOK = 0.1; // s of wall time the sound is scheduled ahead
+const LATE = 0.12; // s of wall time a cue may run late after a slow frame (it then plays at once)
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const SPEEDS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2];
 
@@ -77,7 +79,7 @@ export async function runLive() {
   const off = {az: 0, el: 0, k: 1};
   let lastInput = -1e9;
   let ring = {t: -9, x: 0, y: 0};
-  let heard = {S: null, tau: 0};
+  let heard = {S: null, at: 0, fresh: true, keys: new Map()};
   // catch-up: while keystrokes are queued, machine time runs faster (up to 5×) so a typist is never left behind;
   // with nothing queued it runs at the chosen speed. Slow motion and pause are never overridden.
   const rate = () => {
@@ -94,12 +96,10 @@ export async function runLive() {
     tour.t0 = T;
     Object.assign(off, {az: 0, el: 0, k: 1});
     paused = false;
-    heard = {S: null, tau: 0};
   };
   /** the visitor takes over: carry the tour's paper, carriage and current view into a visitor session */
   const takeOver = () => {
     lastInput = T;
-    sound.unlock();
     if (!tour.on) return;
     tour.on = false;
     const t = Math.min(DURATION, T - tour.t0);
@@ -124,12 +124,30 @@ export async function runLive() {
     VE = VIEW_EVENTS.filter((e) => e.t <= t).map((e) => ({...e, t: T - (t - e.t)}));
     if (!VE.length) VE = [{t: -99, cam: 'hero'}];
     Object.assign(off, {az: 0, el: 0, k: 1});
-    heard = {S: null, tau: 0};
   };
   const pulse = (x, y) => (ring = {t: T, x, y});
   const pulseBtn = (k) => pulse(...ui.spot(k));
   const view = (e) => VE.push({t: T, ...e});
   const curView = () => viewAt(VE, T, EXPLODE);
+
+  // ------------------------------------------------------------ sound: every gesture may unlock it
+  // (capture phase, so it runs before any handler; it never takes over and never changes the visitor's settings)
+  let soundAtPress = sound.status; // the sound state when the current gesture began
+  const gestureStart = () => {
+    soundAtPress = sound.status;
+    sound.unlock();
+  };
+  addEventListener('pointerdown', gestureStart, true);
+  addEventListener('keydown', gestureStart, true);
+  for (const ev of ['pointerup', 'touchend', 'click']) addEventListener(ev, () => sound.unlock(), true);
+  const soundButton = () => {
+    sound.unlock();
+    if (soundAtPress === 'locked') return; // this press is the one that enabled sound
+    if (soundAtPress === 'off') sound.setMuted(false);
+    else if (soundAtPress === 'on') sound.setMuted(true);
+  };
+  // sound controls never take the machine from the tour
+  const soundControl = (n) => !!n?.closest?.('[data-k="mute"], [aria-label="VOLUME"]');
 
   // ------------------------------------------------------------ actions from the visitor
   const act = (req) => {
@@ -161,10 +179,11 @@ export async function runLive() {
 
   // ------------------------------------------------------------ console buttons
   const B = ui.btn;
-  const on = (k, fn) =>
+  const on = (k, fn, kind = 'takeover') =>
     B[k]?.addEventListener('click', (e) => {
       e.stopPropagation();
-      takeOver();
+      if (kind === 'takeover') takeOver();
+      else lastInput = T;
       pulseBtn(k);
       fn();
     });
@@ -198,10 +217,9 @@ export async function runLive() {
     V.id = `v${sid}`;
     tau = 0;
     paused = false;
-    heard = {S: null, tau: 0};
   });
   on('slow', () => (slow = !slow));
-  on('mute', () => sound.setMuted(!sound.muted));
+  on('mute', soundButton, 'keep');
   for (const q of ['auto', 'high', 'balanced', 'low'])
     on('q_' + q, () => {
       quality = q;
@@ -214,14 +232,12 @@ export async function runLive() {
   B.tour.addEventListener('click', (e) => {
     e.stopPropagation();
     lastInput = T;
-    sound.unlock();
     if (tour.on) takeOver();
     else startTour();
   });
   ui.chip.addEventListener('click', (e) => {
     e.stopPropagation();
     lastInput = T;
-    sound.unlock();
     if (tour.on) takeOver();
     else startTour();
   });
@@ -255,7 +271,8 @@ export async function runLive() {
     };
     sl.el.addEventListener('pointerdown', (e) => {
       e.stopPropagation();
-      takeOver();
+      if (k !== 'vol') takeOver();
+      else lastInput = T;
       sl.el.setPointerCapture(e.pointerId);
       move(e);
       const mv = (ev) => move(ev);
@@ -270,7 +287,8 @@ export async function runLive() {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault();
       e.stopPropagation();
-      takeOver();
+      if (k !== 'vol') takeOver();
+      else lastInput = T;
       const step = k === 'time' ? 0.02 : k === 'speed' ? 1 / (SPEEDS.length - 1) : 0.05;
       def.set(clamp(def.get() + (e.key === 'ArrowRight' ? step : -step), 0, 1));
     });
@@ -402,7 +420,7 @@ export async function runLive() {
     {passive: false},
   );
   addEventListener('pointerdown', (e) => {
-    if (e.target === ui.chip || e.target === B.tour) return;
+    if (e.target === ui.chip || e.target === B.tour || soundControl(e.target)) return;
     takeOver();
   });
   addEventListener('touchstart', () => takeOver(), {passive: true});
@@ -422,6 +440,7 @@ export async function runLive() {
   const perf = {n: 0, sum: 0, slow: 0, age: 0, fps: 60};
   let last = performance.now();
   let frameNo = 0;
+  const cueKey = (c) => `${c.kind}@${c.t.toFixed(6)}`;
   const camOverride = (cam) => ({...cam, az: cam.az + off.az, el: clamp(cam.el + off.el, -15, 85), d: cam.d * off.k});
   const frame = (now) => {
     requestAnimationFrame(frame);
@@ -475,7 +494,7 @@ export async function runLive() {
           const c = tour.cursor(t, ui.spot, project);
           return ringK > c.ring ? {...c, ring: ringK, ringX: ring.x, ringY: ring.y} : c;
         },
-        ui: {paused: false, slow: cueRate < 0.7, muted: sound.muted, quality, panels, tour: true, sliders: sliderVals(cueRate, t / DURATION, `${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`), viewSub: viewSub()},
+        ui: {paused: false, slow: cueRate < 0.7, muted: sound.muted, sound: sound.status, quality, panels, tour: true, sliders: sliderVals(cueRate, t / DURATION, `${t.toFixed(1)} / ${+DURATION.toFixed(1)} S`), viewSub: viewSub()},
       };
       // tour button clicks make the soft UI tick
       for (const c of CLICKS) if (c.t > t - dt && c.t <= t) sound.schedule([{kind: 'ui', gain: 1, pitch: 1, offset: 0}]);
@@ -493,19 +512,28 @@ export async function runLive() {
         viewT: T,
         camOverride,
         cursor: {x: -99, y: -99, press: false, ring: ringK, ringX: ring.x, ringY: ring.y},
-        ui: {paused, slow, muted: sound.muted, quality, panels, tour: false, sliders: sliderVals(SPEEDS[speedI] * (slow ? 0.25 : 1), (tau - a) / (b - a || 1), `${tau.toFixed(2)} S`), viewSub: viewSub()},
+        ui: {paused, slow, muted: sound.muted, sound: sound.status, quality, panels, tour: false, sliders: sliderVals(SPEEDS[speedI] * (slow ? 0.25 : 1), (tau - a) / (b - a || 1), `${tau.toFixed(2)} S`), viewSub: viewSub()},
       };
     }
     F.heavy = tier !== 'low' || frameNo % 2 === 0;
     app.frame(F);
-    // sound: cues from the session between what was heard and a short look-ahead, at their machine times
+    // sound: every cue of the session from now to a short look-ahead, each scheduled exactly once at its machine time
+    // (a new session or a jump back starts afresh; a jump forward — a scrub, a step, a long frame — skips what it
+    // jumped over but keeps the record of what is already scheduled, so nothing ever plays twice). The old window
+    // [last look-ahead, look-ahead) was reset every frame because the look-ahead always lay ahead of τ: every cue
+    // played once per frame inside the window (3× at 60 Hz, 8× at 144 Hz).
+    if (heard.S !== S || tauNow < heard.at - 1e-6) heard = {S, at: tauNow, fresh: true, keys: new Map()};
+    else if ((cueRate === 0 && tauNow !== heard.at) || tauNow - heard.at > (LOOK + LATE) * Math.max(1, cueRate)) heard.fresh = true;
     if (cueRate > 0) {
-      const look = tauNow + 0.06 * cueRate;
-      if (heard.S !== S || heard.tau > tauNow + 1e-6 || tauNow - heard.tau > 0.5) heard = {S, tau: tauNow};
-      const cues = S.cuesBetween(heard.tau, look);
+      const from = heard.fresh ? tauNow : tauNow - LATE * cueRate;
+      const cues = S.cuesBetween(from, tauNow + LOOK * cueRate).filter((c) => !heard.keys.has(cueKey(c)));
+      for (const c of cues) heard.keys.set(cueKey(c), c.t);
       if (cues.length) sound.schedule(cues.map((c) => ({...c, dur: c.dur ? c.dur / cueRate : c.dur, offset: (c.t - tauNow) / cueRate})));
-      heard.tau = look;
-    } else heard = {S, tau: tauNow};
+      for (const [k, t] of heard.keys) if (t < from - 1) heard.keys.delete(k);
+      heard.fresh = false;
+    }
+    heard.at = tauNow;
+    sound.sample();
     if (!window.SIM_SHOWN) {
       window.SIM_SHOWN = true;
       document.getElementById('boot')?.remove();
@@ -568,6 +596,10 @@ export async function runLive() {
     },
     get volume() {
       return sound.volume;
+    },
+    /** the sound engine as the visitor would hear it: state, settings, cues played, the output meter */
+    get audio() {
+      return {state: sound.state, status: sound.status, muted: sound.muted, volume: sound.volume, gain: sound.gain, time: sound.time, ...sound.stats, byKind: {...sound.stats.byKind}};
     },
     get offset() {
       return {...off};
