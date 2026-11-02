@@ -258,7 +258,7 @@ export const EXPLODE = {
 // ------------------------------------------------------------ cameras: target (mm), azimuth from +z toward +x,
 // elevation, distance (mm), screen shift (px of the 1600×900 stage)
 export const CAMS = {
-  hero: {t: [0, 150, 40], az: 36, el: 24, d: 1520, sx: 0, sy: -34},
+  hero: {t: [0, 150, 40], az: 36, el: 24, d: 1600, sx: 0, sy: -22}, // S  the sheet's top edge clears the status bar
   operator: {t: [0, 150, 70], az: 0, el: 30, d: 1450, sx: 0, sy: -30},
   keyboard: {t: [0, 105, 150], az: 16, el: 44, d: 1000, sx: 0, sy: -20},
   side: {t: [0, 160, 40], az: 90, el: 8, d: 1500, sx: 0, sy: -30},

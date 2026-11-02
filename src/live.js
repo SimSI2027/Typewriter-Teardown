@@ -543,8 +543,13 @@ export async function runLive() {
     heard.at = tauNow;
     sound.sample();
     if (!window.SIM_SHOWN) {
+      // the first real frame is on screen: the loading card fades away
       window.SIM_SHOWN = true;
-      document.getElementById('boot')?.remove();
+      const boot = document.getElementById('boot');
+      if (boot) {
+        boot.classList.add('gone');
+        setTimeout(() => boot.remove(), reduced ? 0 : 500);
+      }
     }
   };
   function sliderVals(sp, tk, ttext, spk = speedI / (SPEEDS.length - 1)) {
@@ -581,11 +586,12 @@ export async function runLive() {
   // every shader compiles before the first frame (kit/warm.js): draw one frame of each look first so materials with
   // their final defines exist, then compile all programs in parallel
   // ghosted (transparent) variants first, then the solid machine
-  app.frame({S: tour.S, tau: 0, viewEvents: [{t: -99, cam: 'hero', xray: true, sub: 'linkage'}], viewT: 0, cursor: null, ui: {sliders: {}, panels: true}});
+  const warmUi = {sliders: {}, panels: true, sound: sound.status, status: {mode: 'loading', text: 'LOADING', main: 'PAUSE TOUR', restart: false}};
+  app.frame({S: tour.S, tau: 0, viewEvents: [{t: -99, cam: 'hero', xray: true, sub: 'linkage'}], viewT: 0, cursor: null, ui: warmUi});
   machine.setAllGhost(true);
   await warmComposer(st.renderer, st.composer, st.scene, st.camera).catch(() => {});
   machine.setAllGhost(false);
-  app.frame({S: tour.S, tau: 0, viewEvents: [{t: -99, cam: 'hero'}], viewT: 0, cursor: null, ui: {sliders: {}, panels: true}});
+  app.frame({S: tour.S, tau: 0, viewEvents: [{t: -99, cam: 'hero'}], viewT: 0, cursor: null, ui: warmUi});
   await warmComposer(st.renderer, st.composer, st.scene, st.camera).catch(() => {});
   onTransition(X.ready(T));
   last = performance.now();

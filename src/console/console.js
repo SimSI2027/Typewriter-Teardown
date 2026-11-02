@@ -393,7 +393,7 @@ export function createConsole(app) {
     setText(btn.color, s.color === 'black' ? 'BLACK' : s.color === 'red' ? 'RED' : 'STENCIL');
     setClass(btn.lockBtn, 'on', s.lock);
     // view title
-    setText(viewTitle, F.sub ? SUBSYSTEMS[F.sub].label : F.camId.toUpperCase());
+    setText(viewTitle, F.sub ? SUBSYSTEMS[F.sub].label : CAM_BUTTONS.includes(F.camId) ? F.camId.toUpperCase() : 'REASSEMBLED');
     setText(viewSub, F.viewSub || '');
     // status bar
     {

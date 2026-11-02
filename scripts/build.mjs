@@ -84,13 +84,19 @@ html,body{margin:0;width:100%;height:100%;background:#eeeae0;overflow:hidden;ove
 body{position:fixed;inset:0}
 #app{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0}
 #gl{position:absolute;inset:0;width:1600px;height:900px;display:block}
-#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:600 11px/1 Inter,system-ui,sans-serif;letter-spacing:2px;color:#8a857a;text-transform:uppercase}
+#boot{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#eeeae0;font:600 11px/1 Inter,system-ui,sans-serif;letter-spacing:2px;color:#8a857a;text-transform:uppercase;transition:opacity .45s cubic-bezier(.6,0,.9,.35)}
+#boot b{display:block;font:800 26px/1 Inter,system-ui,sans-serif;letter-spacing:.4px;color:#17181b;text-transform:none}
+#boot i{display:block;position:relative;width:180px;height:2px;background:#e2ddd2;overflow:hidden}
+#boot i::after{content:'';position:absolute;left:0;top:0;bottom:0;width:36%;background:#b07a22;animation:boot 1.3s cubic-bezier(.65,0,.35,1) infinite}
+#boot.gone{opacity:0;pointer-events:none}
+@keyframes boot{0%{transform:translateX(-100%)}100%{transform:translateX(280%)}}
+@media (prefers-reduced-motion: reduce){#boot{transition:none}#boot i::after{animation:none;width:100%;opacity:.5}}
 noscript{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:14px system-ui}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div id="boot">Assembling the Underwood&hellip;</div>
+<div id="boot" role="status"><b>Underwood No. 5</b><i></i><span>Assembling the machine&hellip;</span></div>
 <noscript>This simulator needs JavaScript and WebGL.</noscript>
 <script type="module" src="assets/${jsName}"></script>
 </body>

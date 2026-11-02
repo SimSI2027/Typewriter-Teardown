@@ -5,7 +5,10 @@ import {runLive} from './live.js';
 
 function fail(msg) {
   const b = document.getElementById('boot');
-  if (b) b.textContent = msg;
+  if (b) {
+    b.classList.remove('gone');
+    b.textContent = msg;
+  }
 }
 
 async function boot() {

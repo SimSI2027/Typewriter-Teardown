@@ -1,0 +1,267 @@
+{
+ "loadMs": 1996,
+ "steps": [
+  {
+   "name": "01-tour-hero",
+   "mode": "tour",
+   "tourT": 1.2321000000000004,
+   "cam": "hero",
+   "sub": null,
+   "col": 12,
+   "action": "char"
+  },
+  {
+   "name": "02-tour-linkage",
+   "mode": "tour",
+   "tourT": 5.628399999999983,
+   "cam": "linkage",
+   "sub": "linkage",
+   "col": 27,
+   "action": "char"
+  },
+  {
+   "name": "03-tour-impact",
+   "mode": "tour",
+   "tourT": 12.031899999999986,
+   "cam": "impact",
+   "sub": "impact",
+   "col": 28,
+   "action": "char"
+  },
+  {
+   "name": "04-tour-escapement",
+   "mode": "tour",
+   "tourT": 15.629499999999998,
+   "cam": "escapement",
+   "sub": "escapement",
+   "col": 30,
+   "action": "space"
+  },
+  {
+   "name": "05-tour-explode",
+   "mode": "tour",
+   "tourT": 32.631500000001516,
+   "cam": "explode",
+   "sub": "explode",
+   "col": 10,
+   "action": null
+  },
+  {
+   "name": "10-paused",
+   "mode": "paused",
+   "tourT": 6.229899999999984,
+   "cam": "linkage",
+   "sub": "linkage",
+   "col": 27,
+   "action": "char"
+  },
+  {
+   "name": "20-linkage-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "linkage",
+   "sub": "linkage",
+   "col": 28,
+   "action": null
+  },
+  {
+   "name": "20-linkage-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "linkage",
+   "sub": "linkage",
+   "col": 29,
+   "action": "char"
+  },
+  {
+   "name": "21-basket-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "typebars",
+   "sub": "basket",
+   "col": 29,
+   "action": null
+  },
+  {
+   "name": "21-basket-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "typebars",
+   "sub": "basket",
+   "col": 30,
+   "action": "char"
+  },
+  {
+   "name": "22-impact-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "impact",
+   "sub": "impact",
+   "col": 30,
+   "action": null
+  },
+  {
+   "name": "22-impact-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "impact",
+   "sub": "impact",
+   "col": 31,
+   "action": "char"
+  },
+  {
+   "name": "23-ribbonFeed-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "feed",
+   "sub": "ribbonFeed",
+   "col": 31,
+   "action": null
+  },
+  {
+   "name": "23-ribbonFeed-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "feed",
+   "sub": "ribbonFeed",
+   "col": 32,
+   "action": "char"
+  },
+  {
+   "name": "24-escapement-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "escapement",
+   "sub": "escapement",
+   "col": 32,
+   "action": null
+  },
+  {
+   "name": "24-escapement-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "escapement",
+   "sub": "escapement",
+   "col": 33,
+   "action": "char"
+  },
+  {
+   "name": "25-carriage-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "carriage",
+   "sub": "carriage",
+   "col": 33,
+   "action": null
+  },
+  {
+   "name": "25-carriage-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "carriage",
+   "sub": "carriage",
+   "col": 34,
+   "action": "space"
+  },
+  {
+   "name": "26-shift-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "shift",
+   "sub": "shift",
+   "col": 34,
+   "action": null
+  },
+  {
+   "name": "26-shift-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "shift",
+   "sub": "shift",
+   "col": 34,
+   "action": "char"
+  },
+  {
+   "name": "27-ret-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "ret",
+   "sub": "ret",
+   "col": 35,
+   "action": null
+  },
+  {
+   "name": "27-ret-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "ret",
+   "sub": "ret",
+   "col": 10,
+   "action": "ret"
+  },
+  {
+   "name": "28-platen-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "platen",
+   "sub": "platen",
+   "col": 10,
+   "action": null
+  },
+  {
+   "name": "28-platen-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "platen",
+   "sub": "platen",
+   "col": 10,
+   "action": "ret"
+  },
+  {
+   "name": "29-explode-open",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "explode",
+   "sub": "explode",
+   "col": 10,
+   "action": null
+  },
+  {
+   "name": "29-explode-working",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "explode",
+   "sub": "explode",
+   "col": 11,
+   "action": "char"
+  },
+  {
+   "name": "40-reassembled",
+   "mode": "manual",
+   "tourT": 9.917899999999971,
+   "cam": "explode",
+   "sub": null,
+   "col": 11,
+   "action": null
+  },
+  {
+   "name": "41-idle-countdown",
+   "mode": "idle",
+   "tourT": 9.917899999999971,
+   "cam": "explode",
+   "sub": null,
+   "col": 11,
+   "action": null
+  },
+  {
+   "name": "42-resumed",
+   "mode": "tour",
+   "tourT": 10.459599999999988,
+   "cam": "impact",
+   "sub": "impact",
+   "col": 28,
+   "action": null
+  }
+ ],
+ "errors": []
+}

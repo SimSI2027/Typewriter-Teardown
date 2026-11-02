@@ -68,19 +68,20 @@ export function createStage(canvas, machine, {capture = false} = {}) {
   // environment: a big warm top softbox, two side strips for rim light, a low front fill
   {
     const env = new THREE.Scene();
-    env.background = new THREE.Color('#d8d4cc');
+    // a mid-dark room so gloss black reflects mostly darkness, with the soft boxes as its highlights
+    env.background = new THREE.Color('#7d7a74');
     const box = (w, h, pos, k, col = '#ffffff') => {
       const mm = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide}));
       mm.position.copy(pos);
       mm.lookAt(0, 0, 0);
       env.add(mm);
     };
-    box(12, 12, new THREE.Vector3(0, 14, 2), 2.4, '#fff8ee');
-    box(3, 14, new THREE.Vector3(-12, 4, 6), 3.2);
-    box(3, 14, new THREE.Vector3(12, 4, -6), 2.4);
-    box(3, 12, new THREE.Vector3(-4, 3, -13), 2.6);
-    box(18, 2, new THREE.Vector3(0, 2, 14), 1.4, '#fff4e4');
-    const g = new THREE.Mesh(new THREE.CircleGeometry(40, 32), new THREE.MeshBasicMaterial({color: '#cbc6bc', side: THREE.DoubleSide}));
+    box(12, 12, new THREE.Vector3(0, 14, 2), 3.0, '#fff8ee');
+    box(3, 14, new THREE.Vector3(-12, 4, 6), 4.2);
+    box(3, 14, new THREE.Vector3(12, 4, -6), 3.2);
+    box(3, 12, new THREE.Vector3(-4, 3, -13), 3.2);
+    box(18, 2, new THREE.Vector3(0, 2, 14), 1.8, '#fff4e4');
+    const g = new THREE.Mesh(new THREE.CircleGeometry(40, 32), new THREE.MeshBasicMaterial({color: '#a9a49a', side: THREE.DoubleSide}));
     g.rotation.x = -Math.PI / 2;
     g.position.y = -2;
     env.add(g);

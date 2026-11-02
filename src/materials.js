@@ -6,10 +6,11 @@ export const ACCENT = new THREE.Color('#c8922e'); // warm brass: the part doing 
 const GHOST = new THREE.Color('#bdb7ab'); // the pale tint ghosted assemblies take
 
 const BASE = {
-  iron: () => new THREE.MeshPhysicalMaterial({color: '#141416', roughness: 0.46, metalness: 0.05, clearcoat: 0.55, clearcoatRoughness: 0.32, envMapIntensity: 0.85}),
+  // gloss black japanning: a near-black base under a hard clearcoat that carries the softbox highlights
+  iron: () => new THREE.MeshPhysicalMaterial({color: '#0b0b0d', roughness: 0.6, metalness: 0, specularIntensity: 0.12, clearcoat: 1, clearcoatRoughness: 0.1, envMapIntensity: 0.8}),
   ironInner: () => new THREE.MeshStandardMaterial({color: '#1e1f22', roughness: 0.62, metalness: 0.15, envMapIntensity: 0.6}),
-  nickel: () => new THREE.MeshStandardMaterial({color: '#cfcfca', roughness: 0.3, metalness: 1, envMapIntensity: 0.75}),
-  steel: () => new THREE.MeshStandardMaterial({color: '#9a9ea4', roughness: 0.42, metalness: 1, envMapIntensity: 0.7}),
+  nickel: () => new THREE.MeshStandardMaterial({color: '#dcdcd6', roughness: 0.24, metalness: 1, envMapIntensity: 0.9}),
+  steel: () => new THREE.MeshStandardMaterial({color: '#b6babf', roughness: 0.34, metalness: 1, envMapIntensity: 0.85}),
   darkSteel: () => new THREE.MeshStandardMaterial({color: '#4a4d52', roughness: 0.5, metalness: 0.85, envMapIntensity: 0.6}),
   brass: () => new THREE.MeshStandardMaterial({color: '#b68a3e', roughness: 0.38, metalness: 1, envMapIntensity: 0.7}),
   rubber: () => new THREE.MeshStandardMaterial({color: '#1c1c1d', roughness: 0.82, metalness: 0, envMapIntensity: 0.5}),

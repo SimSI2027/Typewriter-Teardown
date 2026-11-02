@@ -13,7 +13,7 @@ const V = new THREE.Vector3();
 
 // callouts per view: anchor name, label, sub-label, screen offset of the label from the part
 const CALLOUTS = {
-  hero: [['basket', 'Typebar basket', '42 BARS · FRONT STRIKE', [-190, 40]], ['wheel', 'Escapement', 'RACK · PINION · STAR WHEEL', [300, 40]], ['platen', 'Platen', '28-TOOTH LINE SPACE', [-200, -60]], ['spoolR', 'Ribbon spool', 'BLACK OVER RED', [150, 120]]],
+  hero: [['basket', 'Typebar basket', '42 BARS · FRONT STRIKE', [-225, 40]], ['wheel', 'Escapement', 'RACK · PINION · STAR WHEEL', [330, 100]], ['platen', 'Platen', '28-TOOTH LINE SPACE', [-200, -60]], ['spoolR', 'Ribbon spool', 'BLACK OVER RED', [165, 160]]],
   linkage: [['key', 'Glass key', 'NICKEL RIM · 14 MM DIP', [70, 60]], ['lever', 'Key lever', 'REAR FULCRUM', [-150, 70]], ['link', 'Sublever link', 'PULLS THE TYPEBAR HEEL', [140, -50]], ['bar', 'Typebar', 'SWINGS ON THE SEGMENT', [-170, -60]]],
   basket: [['bar', 'Typebar', 'IN FLIGHT TO THE PLATEN', [150, -60]], ['segment', 'Segment', 'SLOTTED PIVOT ARC', [-190, 30]], ['ubar', 'Universal bar', 'TRIPS THE ESCAPEMENT', [170, 70]]],
   impact: [['slug', 'Type slug', 'TWO CHARACTERS PER SLUG', [150, 60]], ['ribbonPt', 'Ribbon', 'LIFTED BY THE VIBRATOR', [-180, 50]], ['paperPt', 'Paper on platen', 'PRINTING POINT', [-170, -80]]],
