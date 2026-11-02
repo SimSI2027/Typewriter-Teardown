@@ -122,7 +122,7 @@ function triHitsBox(t, B, tol) {
   return true;
 }
 /** confirm a box overlap at the surface when a part is a concave extrusion (a plate with an opening, an arch) */
-const concave = (A) => A.geo.type === 'ExtrudeGeometry';
+const concave = (A) => A.geo.type === 'ExtrudeGeometry' || A.geo.type === 'TorusGeometry' || A.geo.type === 'LatheGeometry';
 function confirm(A, B, tol) {
   if (!concave(A) && !concave(B)) return true;
   if (concave(A) && tris(A).some((t) => triHitsBox(t, B, tol))) return true;

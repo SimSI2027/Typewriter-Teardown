@@ -201,6 +201,12 @@ export const T = {
   release: 0.28,
   lock: 0.28, // a locked key: dips a little and comes back
 };
+// ------------------------------------------------------------ typebar drive and space bar (E; see docs/ASSUMPTIONS.md)
+export const DRIVE = {
+  barDeg: 88, // E  the sublever drives the bar to just short of vertical; it flies the rest to the platen
+  ubFromDeg: 120, // E  the heel meets the universal bar over the last stretch of the swing (from this angle to the strike)
+};
+export const SPACE_PH = {down: [0, 0.34], up: [0.42, 0.85]}; // S  space bar stroke phases (fractions of its duration)
 export const PH = {
   // character stroke
   keyDown: [0.0, 0.3],
@@ -218,29 +224,33 @@ export const PH = {
   retLeverBack: [0.84, 1.0],
 };
 
-// ------------------------------------------------------------ explosion vectors (mm), per assembly
+// ------------------------------------------------------------ explosion paths (mm), per assembly. A vector is a straight
+// move over the whole teardown; {at: [[k, [x, y, z]], …]} is a staged path in teardown progress k (0..1) from home:
+// parts wait for the ones in front of them, and leave a mount before they slide. Reassembly retraces it backwards.
 export const EXPLODE = {
-  carriage: [0, 120, -40],
-  platen: [0, 165, -10],
-  paper: [0, 205, 10],
-  rack: [0, 70, -70],
-  rails: [0, 52, -40],
-  return: [-90, 150, -30],
+  // the platen rides in the carriage and the paper on the platen: their offsets add to the carriage's
+  carriage: [0, 110, -40],
+  platen: [0, 70, -10], // relative to the carriage
+  paper: [0, 40, 10], // relative to the platen
+  rack: [0, 0, 0], // stays screwed under the carriage and leaves with it
+  rails: {at: [[0.4, [0, 40, 0]], [1, [0, 52, -40]]]}, // up off their brackets, clear of the bell trip, then back
+  return: {at: [[0.4, [-90, 0, 0]], [1, [-90, 150, -30]]]}, // out to the left off the platen end, then up
   bell: [-130, 20, -20],
   mainspring: [-120, -10, -90],
-  escapement: [0, -10, -130],
-  ubar: [0, -24, -60],
+  escapement: [0, -4, 0], // captive (rear cross member behind, universal-bar trip above): drops off its mount only
+  ubar: [0, 0, 0], // stays: it is threaded through the fan of links and held under the segment flange (no free path)
   ribbon: [0, 85, 30],
   vibrator: [0, 50, 55],
-  typebars: [0, 40, 70], // fanned further in subsystem view
-  segment: [0, 18, 40],
-  linkage: [0, 34, 46], // up and forward: nothing may pass below the base or through the floor
-  levers: [0, 18, 112], // lifted clear of the front rail (top 37 mm), then slid out of the front
-  keys: [0, 60, 70],
-  spacebar: [0, -20, 90],
-  shift: [0, 26, 72],
-  backspace: [60, 40, 40],
-  hood: [0, 30, 140],
+  typebars: {at: [[0.45, [0, 40, 0]], [1, [0, 40, 70]]]}, // up through the deck opening, then forward (fanned)
+  segment: [0, 0, 40], // slides forward under the deck (its bars lift off above it)
+  linkage: [0, 0, 0], // stays on its sublevers: the links interlock with the universal bar (no free path)
+  levers: [0, 0, 0], // stay on the fulcrum under their sublevers (the key-lever skeleton stays with the frame)
+  keys: {at: [[0.4, [0, 0, 0]], [1, [0, 60, 70]]]}, // after the hood has passed over them
+  spacebar: [0, 0, 0], // stays: its rear rod runs under every key lever (part of the key-lever skeleton)
+  shift: [0, 0, 0], // stays on the frame: its lift rods run from the base to the deck at the sides, so no straight
+  //                   path out exists (base, front rail and deck strip all cross it) — the side panels move away to show it
+  backspace: [50, 5, 60], // forward and right, kept under the deck strip and clear of the space bar
+  hood: {at: [[0.45, [0, 30, 200]]]}, // first: forward over the resting keys
   frame: [0, 0, 0],
   frameSides: [150, 0, 0], // side panels slide out sideways (mirrored)
 };
@@ -259,6 +269,45 @@ export const CAMS = {
   ribbon: {t: [0, 220, 30], az: 18, el: 30, d: 640, sx: 0, sy: -20},
   carriage: {t: [0, 225, -50], az: 150, el: 28, d: 1250, sx: 0, sy: -30},
   rear: {t: [0, 170, -40], az: 180, el: 20, d: 1450, sx: 0, sy: -30},
-  platen: {t: [-110, 236, -20], az: -48, el: 22, d: 700, sx: 0, sy: -20},
+  platen: {t: [-30, 250, -30], az: -32, el: 24, d: 950, sx: 0, sy: -20},
   inside: {t: [0, 130, 50], az: 64, el: 14, d: 640, sx: 0, sy: -20},
+};
+// cameras that only subsystem views use (same form)
+export const SUBCAMS = {
+  linkage: {t: [10, 115, 70], az: 64, el: 16, d: 920, sx: 0, sy: -20},
+  ubar: {t: [0, 172, -10], az: 120, el: 30, d: 680, sx: 0, sy: -20},
+  feed: {t: [0, 210, 40], az: 10, el: 56, d: 920, sx: 0, sy: -20},
+  shift: {t: [10, 165, -20], az: 82, el: 12, d: 1120, sx: 0, sy: -20},
+  backspace: {t: [50, 172, -80], az: 142, el: 24, d: 760, sx: 0, sy: -20},
+  bell: {t: [-150, 140, -50], az: -80, el: 10, d: 720, sx: 0, sy: -20},
+  ret: {t: [-110, 245, -10], az: -34, el: 24, d: 950, sx: 0, sy: -20},
+  spacing: {t: [-150, 245, -20], az: -64, el: 18, d: 640, sx: 0, sy: -20},
+  mainspring: {t: [-90, 190, -130], az: -150, el: 28, d: 900, sx: 0, sy: -20},
+  explode: {t: [0, 240, 30], az: 36, el: 22, d: 2250, sx: 0, sy: -30},
+  ribbonLift: {t: [0, 222, 12], az: 14, el: 20, d: 470, sx: 0, sy: -20},
+};
+// typebar fan (alternate bars raised 8° / 26° at 1) and key-row lift for the views that spread them
+export const VIEW_SPREAD = {linkage: {rows: 0.6}, basket: {fan: 0.6}, explode: {fan: 1, rows: 1}};
+export const VIEW_T = 1.25; // S  seconds for a view change (camera, explode, ghosting)
+
+// ------------------------------------------------------------ how far each subsystem view explodes its assemblies:
+// a number scales that assembly's EXPLODE vector, an array is a vector (mm) of its own. FULL EXPLODE uses 1 for all.
+export const VIEW_EXPLODE = {
+  linkage: {frameSides: 1, keys: 0.25}, // keys lift off their levers; levers stay on the fulcrum
+  basket: {hood: 1}, // the bars fan on their own segment (VIEW_SPREAD); nothing else needs to move
+  ribbonLift: {}, // isolated in place (hood cut): the vibrator works between the platen and the carriage's front tie
+  //               rod with under a millimetre either side, and the spools sit under that rod
+  ribbonFeed: {ribbon: [0, 30, 60], vibrator: [0, 30, 60]}, // spools and vibrator together (the ribbon stays threaded), forward past the return lever
+  ubar: {}, // isolated in place (hood and sides cut): the bar sits between the segment flange and the links, so any
+  //          move would pass through one of them
+  escapement: {escapement: [0, -4, 0]}, // the foot drops off the rear cross member's underside and the pinion leaves the
+  //                rack; the train is captive (cross member behind, universal-bar trip above the shaft), so it goes no further
+  carriage: {vibrator: {at: [[0.3, [0, -25, 0]]]}, carriage: {at: [[0.3, [0, 0, 0]], [1, [0, 54, -18]]]}}, // the vibrator
+  //                steps down out of the way, then the carriage lifts off its rails
+  mainspring: {mainspring: 0.3},
+  backspace: {backspace: [22, 0, 0]},
+  bell: {bell: [-14, 0, -6]}, // the margin rack travels with it: it may not reach the carriage end plate
+  ret: {},
+  spacing: {return: 0.18},
+  platen: {platen: 0.6, paper: 0.5, return: [0, 60, 0]}, // the return lever steps up out of the platen's way
 };

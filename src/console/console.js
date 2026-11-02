@@ -42,6 +42,9 @@ const CSS = `
 @media (prefers-reduced-motion: reduce){.chip.on i{animation:none}}
 .paperline{font:500 11px 'JetBrains Mono',monospace;letter-spacing:0;white-space:pre;color:${C.ink}}
 `;
+// a pointer press must not leave a console control focused: the visitor's next Space or Enter belongs to the
+// typewriter, not to the button last clicked (keyboard Tab focus is unaffected)
+const noPointerFocus = (n) => n.addEventListener('mousedown', (e) => e.preventDefault());
 const el = (h) => {
   const d = document.createElement('div');
   d.innerHTML = h.trim();
@@ -69,6 +72,7 @@ export function createConsole(app) {
   const mkBtn = (key, label, x, y, w, extra = '', aria = '') => {
     const b = el(`<button class="tb pnl" type="button" style="left:${x}px;top:${y}px;width:${w}px;${extra}"${aria ? ` aria-label="${aria}"` : ''}>${label}</button>`);
     ui.appendChild(b);
+    noPointerFocus(b);
     btn[key] = b;
     return b;
   };
@@ -128,6 +132,7 @@ export function createConsole(app) {
     const val = pnl(`<div class="cp" style="position:absolute;right:${1600 - 283}px;top:${y}px;font-weight:700"></div>`);
     const s = el(`<div class="sl pnl" tabindex="0" role="slider" aria-label="${label}" style="left:${X0}px;top:${y + 12}px;width:240px"><i></i><em></em><b></b></div>`);
     ui.appendChild(s);
+    noPointerFocus(s);
     sliders[key] = {el: s, val, knob: s.querySelector('b'), fill: s.querySelector('em'), x: X0, w: 240, y: y + 23};
     return sliders[key];
   };
@@ -207,6 +212,7 @@ export function createConsole(app) {
   const viewTitle = pnl(`<div style="position:absolute;left:0;right:0;top:58px;text-align:center;font-size:13px;font-weight:700;letter-spacing:3px"></div>`);
   const viewSub = pnl(`<div class="cp mu" style="position:absolute;left:0;right:0;top:77px;text-align:center;font-weight:500"></div>`);
   const chip = add(`<button class="chip" aria-label="Auto tour"></button>`);
+  noPointerFocus(chip);
 
   // ------------------------------------------------------------ callouts, pointer
   const callSvg = add(`<svg style="position:absolute;inset:0;overflow:visible;pointer-events:none" width="1600" height="900"></svg>`);

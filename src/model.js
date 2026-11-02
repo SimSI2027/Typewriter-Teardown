@@ -9,7 +9,7 @@
 // a pure function of (session, τ). The film, the live page, the console, the schematic, the sound and the tests all
 // read this one function.
 import {charToKey, CHAR_KEYS, FN, glyphOf} from './keyboard.js';
-import {BASKET, CARRIAGE, ESC, KEYS, LINE, MAINSPRING, PH, PITCH, PLATEN, RIBBON, T, BELL} from './params.js';
+import {BASKET, CARRIAGE, DRIVE, ESC, KEYS, LINE, MAINSPRING, PH, PITCH, PLATEN, RIBBON, SPACE_PH, T, BELL} from './params.js';
 
 const D2R = Math.PI / 180;
 export const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -34,7 +34,7 @@ const settle = (x) => {
 
 // ------------------------------------------------------------ derived geometry of the typebar linkage
 const R0 = BASKET.restDeg * D2R;
-const DRIVE_DEG = 88; // E  the sublever drives the bar to just short of vertical; it flies the rest
+const DRIVE_DEG = DRIVE.barDeg;
 const RD = DRIVE_DEG * D2R;
 export const STRIKE_DEG = BASKET.strikeDeg;
 /** heel drop at full key travel = what the sublever link pulls (same for every key) */
@@ -42,7 +42,7 @@ export const LINK_PULL = BASKET.heelArm * (Math.sin(RD) - Math.sin(R0));
 /** bar angle the linkage holds for key progress k (0..1): the heel follows the link linearly */
 export const driveDeg = (k) => Math.asin(clamp(Math.sin(R0) + c01(k) * (Math.sin(RD) - Math.sin(R0)), -1, 1)) / D2R;
 /** universal-bar travel 0..1 for a typebar angle: the heel meets the bar over the last 23° before the platen */
-export const ubOfBar = (deg) => smooth((deg - 120) / (STRIKE_DEG - 120));
+export const ubOfBar = (deg) => smooth((deg - DRIVE.ubFromDeg) / (STRIKE_DEG - DRIVE.ubFromDeg));
 
 // key lever: the key end dips `travel`; each row's sublever lug sits where the lever moves LINK_PULL
 export const lugZ = (row) => KEYS.fulcrumZ + (LINK_PULL / KEYS.travel) * (KEYS.rowZ[row] - KEYS.fulcrumZ);
@@ -81,7 +81,7 @@ const STEP1 = [Math.max(P_TRIP, PH.impact + PH.dwell), Math.max(P_TRIP, PH.impac
 const STEP2 = [Math.max(P_RESET, STEP1[1] + 0.015), Math.max(P_RESET, STEP1[1] + 0.015) + 0.07];
 
 // space bar: rocks the universal bar directly through its own links
-const SP = {down: [0, 0.34], up: [0.42, 0.85]};
+const SP = SPACE_PH;
 const spaceDepth = (p) => (p < SP.down[1] ? smooth(span(p, SP.down)) : p < SP.up[0] ? 1 : 1 - smooth(span(p, SP.up)));
 const spaceTrip = solve((p) => spaceDepth(p), 0, SP.down[1], ESC.tripAt, true);
 const spaceReset = solve((p) => spaceDepth(p), SP.up[0], SP.up[1], ESC.resetAt, false);

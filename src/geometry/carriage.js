@@ -47,6 +47,19 @@ export function paperPoint(s) {
   return [d * Math.cos(lean), PR - d * Math.sin(lean)];
 }
 
+/**
+ * the paper table: a plate under the incoming sheet, from just behind the platen up the paper's path. Returns its
+ * tilt about x (its local z runs along the path, its local +y — the decal side — faces up and toward the operator),
+ * its length and its centre (y, z relative to the platen axis).
+ */
+export function paperTable() {
+  const [y0, z0] = paperPoint(PAPER_PATH.lenA - 20);
+  const [y1, z1] = paperPoint(PAPER_PATH.lenA - 110);
+  // rotating local z = (0,0,1) by θ about x gives (0, −sin θ, cos θ): parallel to the path (dy > 0, dz < 0) when
+  // θ = atan2(dy, −dz). (The sign was inverted before the 2026-11 audit: the table crossed the sheet — D-02.)
+  return {tilt: Math.atan2(y1 - y0, -(z1 - z0)), len: Math.hypot(y1 - y0, z1 - z0), mid: [(y0 + y1) / 2, (z0 + z1) / 2], from: [y0, z0], to: [y1, z1]};
+}
+
 export function buildCarriage(mats, nodes) {
   const {m} = mats;
   const move = new THREE.Group(); // carriage x travel (no explode on this node)
@@ -189,11 +202,9 @@ export function buildCarriage(mats, nodes) {
     const tableW = 2 * half - 14;
     const tg = new THREE.Group();
     // table plane: from just behind the platen along the paper's incoming direction
-    const [y0, z0] = paperPoint(PAPER_PATH.lenA - 20);
-    const [y1, z1] = paperPoint(PAPER_PATH.lenA - 110);
-    const len = Math.hypot(y1 - y0, z1 - z0);
-    tg.position.set(0, axisY + (y0 + y1) / 2 - 1.6, axisZ + (z0 + z1) / 2 - 1);
-    tg.rotation.x = -Math.atan2(y1 - y0, -(z1 - z0));
+    const {tilt, len, mid} = paperTable();
+    tg.position.set(0, axisY + mid[0] - 1.6, axisZ + mid[1] - 1);
+    tg.rotation.x = tilt;
     plG.add(tg);
     mesh(boxGeo(tableW, 2.4, len, 1), m('platen', 'iron'), [0, 0, 0], null, tg);
     const d = mesh(new THREE.PlaneGeometry(130, 32), m('platen', 'decal', {key: 'table', map: tableTex}), [0, 1.4, 0], [-Math.PI / 2, 0, 0], tg);

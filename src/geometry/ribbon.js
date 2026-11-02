@@ -81,6 +81,7 @@ export function buildRibbon(mats, nodes) {
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   const strip = new THREE.Mesh(geo, ribMat);
+  strip.userData.noCollide = true; // a curved strip: its box says nothing about contact (tests)
   strip.castShadow = true;
   strip.receiveShadow = true;
   strip.frustumCulled = false;

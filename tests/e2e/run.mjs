@@ -158,6 +158,23 @@ await test('clicking the visible typewriter keys types them', async () => {
   assert.equal(await L(page, () => LIVE.session.glyphs.at(-1).ch), 'k');
 });
 
+await test('a mouse-clicked console button keeps no focus: Space and Enter still reach the typewriter (D-01)', async () => {
+  await waitIdle(page);
+  await clickBtn(page, 'Subsystem typebar basket');
+  const focus = await L(page, () => document.activeElement?.tagName);
+  assert.notEqual(focus, 'BUTTON', 'the clicked button took focus');
+  const b = await L(page, () => ({col: LIVE.state.col, lines: LIVE.state.lines, n: LIVE.session.glyphs.length}));
+  await page.keyboard.type('a b');
+  await page.keyboard.press('Enter');
+  await waitIdle(page);
+  const a = await L(page, () => ({col: LIVE.state.col, lines: LIVE.state.lines, n: LIVE.session.glyphs.length, types: LIVE.session.acts.slice(-4).map((x) => x.type).join(',')}));
+  assert.equal(a.n, b.n + 2, 'two characters printed');
+  assert.equal(a.types, 'char,space,char,ret', `actions ${a.types}`);
+  assert.equal(a.lines, b.lines + 1, 'return fed a line');
+  assert.equal(a.col, 10, 'carriage back at the margin');
+  await clickBtn(page, 'REASSEMBLE');
+});
+
 await test('every subsystem button isolates its assembly; reassemble restores', async () => {
   const subs = ['KEY LINKAGE', 'TYPEBAR BASKET', 'IMPACT', 'RIBBON LIFT', 'RIBBON FEED', 'UNIVERSAL BAR', 'ESCAPEMENT', 'CARRIAGE', 'MAINSPRING', 'SHIFT', 'BACKSPACE', 'MARGIN BELL', 'CARRIAGE RETURN', 'LINE SPACING', 'PLATEN', 'FULL EXPLODE'];
   const ids = ['linkage', 'basket', 'impact', 'ribbonLift', 'ribbonFeed', 'ubar', 'escapement', 'carriage', 'mainspring', 'shift', 'backspace', 'bell', 'ret', 'spacing', 'platen', 'explode'];

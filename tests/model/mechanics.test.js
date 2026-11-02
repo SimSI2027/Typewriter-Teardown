@@ -123,7 +123,8 @@ test('exploded parts never go below the desk', () => {
   const minY = {levers: 23, linkage: 40, spacebar: 41, shift: 21, keys: 40, backspace: 33, ubar: 168, escapement: 130, mainspring: 160, segment: 170, typebars: 160, ribbon: 185, vibrator: 190, bell: 70, carriage: 196, rack: 186, platen: 206, paper: 150, return: 220, hood: 124, rails: 200, frame: 0, frameSides: 16};
   for (const [a, v] of Object.entries(EXPLODE)) {
     if (!(a in minY)) continue;
-    assert.ok(minY[a] + v[1] >= 0, `${a} would go ${-(minY[a] + v[1])} mm below the desk`);
+    // a straight vector, or every keyframe of a staged path
+    for (const p of Array.isArray(v) ? [v] : v.at.map(([, q]) => q)) assert.ok(minY[a] + p[1] >= 0, `${a} would go ${-(minY[a] + p[1])} mm below the desk`);
   }
 });
 

@@ -9,6 +9,7 @@ import {buildBasket} from './geometry/basket.js';
 import {buildRibbon} from './geometry/ribbon.js';
 import {buildCarriage} from './geometry/carriage.js';
 import {buildRear} from './geometry/rear.js';
+import {explodeAt} from './views.js';
 
 export const ASSEMBLIES = ['frame', 'frameSides', 'hood', 'rails', 'keys', 'levers', 'linkage', 'spacebar', 'shift', 'backspace', 'segment', 'typebars', 'ubar', 'vibrator', 'ribbon', 'escapement', 'mainspring', 'bell', 'carriage', 'rack', 'platen', 'paper', 'return'];
 // material groups: the frame side panels share the frame's materials
@@ -54,13 +55,10 @@ export function buildMachine() {
     const ex = look.explode || {};
     for (const a of ASSEMBLIES) {
       const v = ex[a];
+      const base = explodeAt(a, v, 1, EXPLODE);
       for (const n of nodes[a]) {
-        if (v == null || v === 0) n.position.set(0, 0, 0);
-        else {
-          const base = Array.isArray(v) ? v : EXPLODE[a].map((c) => c * v);
-          const mir = n.userData.mirror ?? 1;
-          n.position.set(base[0] * mir, base[1], base[2]);
-        }
+        if (!base) n.position.set(0, 0, 0);
+        else n.position.set(base[0] * (n.userData.mirror ?? 1), base[1], base[2]);
       }
     }
     // key rows lift apart in order when the keys explode
