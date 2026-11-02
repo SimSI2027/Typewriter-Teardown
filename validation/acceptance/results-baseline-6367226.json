@@ -1,0 +1,127 @@
+{
+ "date": "2026-11-02T14:12:40.287Z",
+ "base": "http://127.0.0.1:4391/Typewriter-Teardown/",
+ "headed": false,
+ "results": [
+  {
+   "name": "sound: locked until a gesture, says so, and never pretends to be on",
+   "ok": false,
+   "ms": 3349,
+   "err": "page.evaluate: TypeError: Cannot read properties of null (reading 'textContent')\n    at eval (eval at evaluate (:290:30), <anonymous>:1:101)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+  },
+  {
+   "name": "sound: ENABLE SOUND starts audio without stopping the tour; the tour is audible at the speakers",
+   "ok": false,
+   "ms": 30419,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "sound: manual keys, space, return and the platen ratchet are audible; each cue plays once",
+   "ok": false,
+   "ms": 6289,
+   "err": "page.waitForFunction: Timeout 5000ms exceeded."
+  },
+  {
+   "name": "sound: the tour rings the margin bell, returns the carriage and turns the platen ratchet, audibly",
+   "ok": false,
+   "ms": 30451,
+   "err": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button[data-k=\"sound\"]')\u001b[22m\n"
+  },
+  {
+   "name": "sound: mute and volume work, survive pause / resume / takeover / restart, and persist",
+   "ok": false,
+   "ms": 30423,
+   "err": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button[data-k=\"sound\"]')\u001b[22m\n"
+  },
+  {
+   "name": "sound: a hidden tab suspends audio and freezes the tour; showing it resumes both",
+   "ok": false,
+   "ms": 30403,
+   "err": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button[data-k=\"sound\"]')\u001b[22m\n"
+  },
+  {
+   "name": "M1 load → tour → PAUSE → RESUME: the paused frame holds; resume continues from it",
+   "ok": false,
+   "ms": 30422,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M2 load → tour → camera button → RESUME",
+   "ok": false,
+   "ms": 30426,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M3 load → tour → subsystem button: manual, the view opens, the machine keeps working → RESUME",
+   "ok": false,
+   "ms": 30435,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M4 load → tour → click a visible key: the stroke completes → RESUME",
+   "ok": false,
+   "ms": 30424,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M5 load → tour → orbit drag → RESUME (the camera blends back, no cut)",
+   "ok": false,
+   "ms": 30422,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M6 load → tour → scroll zoom → RESUME",
+   "ok": false,
+   "ms": 30424,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M7 load → tour → physical keyboard → RESUME",
+   "ok": false,
+   "ms": 30432,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M8 interrupted → idle countdown → automatic continuation from the interruption (never mid-use)",
+   "ok": false,
+   "ms": 30428,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M9 tour completes → holds → RESTART TOUR plays from zero (RESUME never does)",
+   "ok": false,
+   "ms": 445,
+   "err": "page.evaluate: TypeError: LIVE.seek is not a function\n    at eval (eval at evaluate (:290:30), <anonymous>:1:12)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+  },
+  {
+   "name": "M10 PAUSE → manual interaction → RESUME continues from the paused time",
+   "ok": false,
+   "ms": 30431,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M11 mute → RESUME → unmute (covered in the sound tests) and M12 unlock → PAUSE → RESUME keeps sound",
+   "ok": false,
+   "ms": 30414,
+   "err": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button[data-k=\"sound\"]')\u001b[22m\n"
+  },
+  {
+   "name": "controls that are not the machine never stop the tour (sound, volume, quality, panels, focus)",
+   "ok": false,
+   "ms": 30433,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "timeline and step scrub the tour (paused) and RESUME plays on from the scrubbed point",
+   "ok": false,
+   "ms": 30442,
+   "err": "page.waitForFunction: Timeout 30000ms exceeded."
+  },
+  {
+   "name": "M14 reduced motion: no autoplay, no idle resume, a still camera; PLAY TOUR still plays from 0",
+   "ok": false,
+   "ms": 416,
+   "err": "Cannot read properties of undefined (reading 'mode')"
+  }
+ ]
+}

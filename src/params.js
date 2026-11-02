@@ -311,3 +311,13 @@ export const VIEW_EXPLODE = {
   spacing: {return: 0.18},
   platen: {platen: 0.6, paper: 0.5, return: [0, 60, 0]}, // the return lever steps up out of the platen's way
 };
+
+// ------------------------------------------------------------ the visitor experience (S: interaction timings, seconds of
+// wall-clock time while the page is visible; see src/experience.js)
+export const EXPERIENCE = {
+  idleHint: 8, // S  quiet in manual mode before the status starts counting down to the automatic resume
+  idleResume: 25, // S  quiet in manual mode before the tour resumes from where it was interrupted
+  completeHold: 8, // S  the finished tour holds its last frame at least this long before it loops from the start
+  resumeBlend: 1.1, // S  camera and look blend from the visitor's view into the tour's on resume / restart
+  dragStart: 4, // S  px of pointer travel before a press on the machine becomes an orbit drag (a takeover)
+};

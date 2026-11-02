@@ -1,0 +1,249 @@
+{
+ "load": {
+  "tour": true,
+  "tau": 7.194,
+  "paused": false,
+  "muted": false,
+  "cam": "linkage",
+  "sub": "linkage",
+  "ctx": [],
+  "created": 0,
+  "starts": 0,
+  "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+  "mute": "SOUND ON",
+  "audio": {
+   "peak": 0,
+   "rms": 0,
+   "samples": 0
+  },
+  "logs": [
+   "warning: THREE.WebGLProgram: Program Info Log: (210,81-129): warning X4122: sum of 0.996094 and -2.98545e-017 cannot be represented accurately in double precision\n(209,37-61): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(210,82-106): warning X4122: sum of 1 and -1.49272e-017 cannot be represented accurately in double precision\n(209,37-61): warning X4122: sum of 1 and -1.66644e-018 cannot be represented accurately in double precision\n(210,82-106): warning X4122: sum of 1 and -1.66644e-018 cannot be represented accurately in double precision\n\n\n\u0000",
+   "warning: THREE.WebGLProgram: Program Info Log: (97,1-6): warning X4000: use of potentially uninitialized variable (dyn_index_vec4_float4_int)\n\n\n\u0000"
+  ]
+ },
+ "clickSoundOn": {
+  "before": {
+   "tour": true,
+   "tau": 7.312,
+   "paused": false,
+   "muted": false,
+   "cam": "linkage",
+   "sub": "linkage",
+   "ctx": [],
+   "created": 0,
+   "starts": 0,
+   "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+   "mute": "SOUND ON"
+  },
+  "after": {
+   "tour": false,
+   "tau": 0.361,
+   "paused": false,
+   "muted": true,
+   "cam": "linkage",
+   "sub": "linkage",
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 0,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND OFF"
+  }
+ },
+ "typeAfterSoundClick": {
+  "tour": false,
+  "tau": 2.426,
+  "paused": false,
+  "muted": true,
+  "cam": "linkage",
+  "sub": "linkage",
+  "ctx": [
+   "running"
+  ],
+  "created": 1,
+  "starts": 0,
+  "chip": "▶  RESUME TOUR",
+  "mute": "SOUND OFF",
+  "audio": {
+   "peak": 0,
+   "rms": 0,
+   "samples": 212
+  }
+ },
+ "subsystemThenResume": {
+  "before": {
+   "tour": true,
+   "tau": 5.21,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [],
+   "created": 0,
+   "starts": 0,
+   "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+   "mute": "SOUND ON"
+  },
+  "after": {
+   "tour": false,
+   "tau": 1.555,
+   "paused": false,
+   "muted": false,
+   "cam": "escapement",
+   "sub": "escapement",
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 11,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND ON"
+  },
+  "machineAdvancingAfterTakeover": 1.014,
+  "resumed": {
+   "tour": true,
+   "tau": 0.056,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 11,
+   "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+   "mute": "SOUND ON"
+  },
+  "logs": []
+ },
+ "pauseThenResume": {
+  "before": {
+   "tour": true,
+   "tau": 6.012,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [],
+   "created": 0,
+   "starts": 0,
+   "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+   "mute": "SOUND ON"
+  },
+  "paused": {
+   "tour": false,
+   "tau": 0,
+   "paused": true,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 0,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND ON"
+  },
+  "playedTransport": {
+   "tour": false,
+   "tau": 0.81,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 2,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND ON"
+  },
+  "resumedChip": {
+   "tour": true,
+   "tau": 0.062,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 2,
+   "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+   "mute": "SOUND ON"
+  },
+  "logs": []
+ },
+ "wheelThenType": {
+  "afterWheel": {
+   "tour": false,
+   "tau": 0.355,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 23,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND ON"
+  },
+  "afterType": {
+   "tour": false,
+   "tau": 1.627,
+   "paused": false,
+   "muted": false,
+   "cam": "hero",
+   "sub": null,
+   "ctx": [
+    "running"
+   ],
+   "created": 1,
+   "starts": 116,
+   "chip": "▶  RESUME TOUR",
+   "mute": "SOUND ON"
+  },
+  "audio": {
+   "peak": 0.9093,
+   "rms": 0.1756,
+   "samples": 171
+  },
+  "log": [
+   {
+    "t": 1.907,
+    "ev": "created",
+    "state": "running",
+    "activation": true
+   },
+   {
+    "t": 1.924,
+    "ev": "state",
+    "state": "running"
+   }
+  ],
+  "logs": []
+ },
+ "voicesPerChar": 93,
+ "idleResume": {
+  "tour": true,
+  "tau": 0.208,
+  "paused": false,
+  "muted": false,
+  "cam": "hero",
+  "sub": null,
+  "ctx": [
+   "running"
+  ],
+  "created": 1,
+  "starts": 209,
+  "chip": "AUTO TOUR · CLICK ANYWHERE TO TAKE OVER",
+  "mute": "SOUND ON"
+ }
+}
