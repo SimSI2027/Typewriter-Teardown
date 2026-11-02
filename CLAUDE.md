@@ -33,6 +33,7 @@ src/views.js         cameras, subsystem modes (isolate / explode / cutaway / x-r
 src/console/*.js     overlay panels, charts, schematic, callouts
 src/tour.js          deterministic tour script (operator moves + typed text), cursor path
 src/sound.js         WebAudio synth; cues derived from model state (live + offline render for the film)
+src/experience.js    visitor experience state machine (loading/tour/paused/manual/idle/complete); pure, unit-tested
 src/live.js          interactive page; src/film.js capture page (window.SIM.render(t))
 scripts/             build, dev, preview, capture (stills/sheets), video, validate
 tests/model/         node:test unit tests of the pure model
@@ -44,7 +45,8 @@ validation/          kept stills, contact sheets, validation notes (no raw frame
 
 - `npm run dev` — build (debug) + local server. `npm run build` — production build into `dist/` (base path relative,
   works at `/Typewriter-Teardown/`). `npm run preview` — serve `dist/`.
-- `npm test` — model unit tests. `npm run test:e2e` — Playwright against the production build.
+- `npm test` — model unit tests. `npm run test:e2e` — Playwright against the production build (controls and layouts,
+  then the visitor-experience acceptance suite with the real autoplay policy: `npm run test:acceptance`).
 - `npm run validate` — beat stills + contact sheet + 0.2 s transition scrubs into `validation/`.
 - `npm run video` — deterministic 1920×1080 60 fps H.264 tour with synced sound (`validation/video/`).
 
@@ -53,6 +55,9 @@ validation/          kept stills, contact sheets, validation notes (no raw frame
 - Run `npm test` and `npm run test:e2e` before every release commit. Do not commit with failing tests.
 - After visual changes, render beat stills and read the contact sheet before calling anything done.
 - Check browser console errors, failed requests and asset paths in the production build.
+- Interaction or sound changes: run `node tests/e2e/acceptance.mjs --headed` too. Prove sound at the destination
+  (`scripts/audio-probe.js`, `scripts/sound-evidence.mjs`), never only by counting scheduled cues. RESUME must
+  continue from the held tour time; only RESTART TOUR may return to 0.
 
 ## Git & publishing
 

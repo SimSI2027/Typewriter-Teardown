@@ -11,9 +11,14 @@ integrated graphics and NVIDIA RTX 4090).
 | Mechanics (typebar sweeps vs neighbours, spools, deck, decal panel; type-guide clearance; rack/pinion/wheel ratio; keys and levers vs base; explode paths stay above the desk; platen ratchet geometry) | `npm test` | 10 / 10 |
 | Geometry on the real code-built machine, headless (paper table under the sheet; every one of the 16 subsystem poses free of interference > 1 mm at 25/50/75/100 % of its teardown; every explode moves its parts and reassembly returns every part exactly home) | `npm test` | 18 / 18 |
 | Views (a change during a transition never jumps; the tour's views identical to before the fix) | `npm test` | 2 / 2 |
-| Production e2e in Chromium (every console control, physical typing, clicking the machine's keys, typing after a mouse-clicked button, shift/caps lock, invalid input, all 16 subsystem and 13 camera buttons, x-ray, cutaway, reassemble, return/spacing/colour (black → red → stencil)/lock, pause/step/slow/speed/timeline scrub, reset, mute/volume, panels, all quality modes, orbit/zoom, tour hand-over and continuity mid-transition, no resume mid-drag, resume after 25 s, callout labels inside the free stage in all 29 views, keyboard focus, console errors/failed requests, local-path leaks, five layouts incl. phone portrait (rotate hint) and landscape with touch, reduced motion incl. after 25 s idle, root vs `/Typewriter-Teardown/` base path) | `npm run test:e2e` | 30 / 30 |
+| Experience state machine (PAUSE holds and RESUME continues from the exact tour time; takeover holds it; idle → countdown → resume from the interruption; no idle resume while active, held or under reduced motion; completion holds then loops; RESTART is the only return to 0; seek; determinism) | `npm test` | 9 / 9 |
+| Production e2e in Chromium (every console control, physical typing, clicking the machine's keys, typing after a mouse-clicked button, shift/caps lock, invalid input, all 16 subsystem and 13 camera buttons, x-ray, cutaway, reassemble, return/spacing/colour (black → red → stencil)/lock, manual pause/step/slow/speed/timeline scrub, reset, mute/volume, panels, all quality modes, orbit/zoom, RESUME from the held position, no resume mid-drag, resume after 25 s, continuity mid-transition, callout labels inside the free stage in all 29 views, keyboard focus, console errors/failed requests, local-path leaks, five layouts incl. phone portrait (rotate hint) and landscape with touch, reduced motion incl. after 25 s idle, root vs `/Typewriter-Teardown/` base path) | `npm run test:e2e` (run.mjs) | 30 / 30 |
+| Visitor-experience acceptance in Chromium with the real autoplay policy, headless and headed (sound locked until a gesture and saying so; ENABLE SOUND starts audio without stopping the tour; tour, keys, space, return, ratchet, bell audible at the destination; one cue = one sound; mute / volume / persistence; hidden tab; the reproduction matrix M1–M14: PAUSE, camera, subsystem, key click, orbit, zoom, keyboard, idle, completion + RESTART, pause + manual, sound across pause/resume, non-machine controls never stop the tour, timeline/step scrub of the tour, reduced motion) | `npm run test:acceptance` | 20 / 20 |
 
-The e2e suite also runs against the deployed site: `node tests/e2e/run.mjs --url https://simsi2027.github.io/Typewriter-Teardown/`.
+Both suites also run against the deployed site: `node tests/e2e/run.mjs --url https://simsi2027.github.io/Typewriter-Teardown/`
+and `node tests/e2e/acceptance.mjs --url https://simsi2027.github.io/Typewriter-Teardown/` (results in
+`validation/acceptance/results-live.json`). On the baseline `6367226` the acceptance suite passed 0 / 20
+(`validation/acceptance/results-baseline-6367226.json`); the measured defects are in `validation/acceptance/before/`.
 Screenshots of every layout are written to `validation/e2e/`. Interference report: `node scripts/collide.mjs`.
 
 ## Still-frame review
@@ -25,6 +30,10 @@ Screenshots of every layout are written to `validation/e2e/`. Interference repor
 - `validation/audit/`: the 2026-11 audit — before/after sheets of every camera, subsystem (isolate / x-ray / cutaway),
   action moment and teardown transition (0.2 s), and side-by-side comparisons in `validation/audit/compare/`.
 - `validation/video-contact-sheet.png`: frames decoded from the encoded video at every beat.
+- `validation/acceptance/`: the 2026-11-02 acceptance pass: baseline defects measured in `before/`, before | after
+  comparisons in `compare/`, the headed walkthrough of ten teardowns operated by hand in `teardown/` (local) and
+  `live/` (GitHub Pages), recorded sound in `sound/` and `live-sound/`. See its README and
+  [docs/audit/ACCEPTANCE.md](audit/ACCEPTANCE.md).
 
 ### Problems found and fixed
 
@@ -62,6 +71,25 @@ column 65; platen rotation equals paper travel (arc length); callout leaders end
 rendered by `window.SIM.render(t)`; the soundtrack is rendered offline from the same session's cues. Measured in the
 soundtrack, the impact transients sit 6–7 ms (the clack's attack) after the modelled impacts: f 5.262 → 5.268 s,
 o 8.56 → 8.567 s, r 11.916 → 11.922 s. `validation/video-contact-sheet.png` shows frames decoded from the encoded file.
+
+## Live sound (`node scripts/sound-evidence.mjs`, headed Chromium, autoplay policy on)
+
+Before any gesture there is no AudioContext and both sound buttons read ENABLE SOUND. After ENABLE SOUND (the
+tour keeps playing), the context runs at 48 kHz, base latency 10 ms, output latency 40 ms. The output device's clock
+advanced 0.448 s in 0.5 s, so the hardware is consuming the stream. The mix handed to the device was recorded and
+measured with ffmpeg (EBU R128) at the default 70 % volume:
+
+| Clip | Integrated | True peak |
+|---|---|---|
+| Tour, first 6 s | −24.6 LUFS | −1.9 dBFS |
+| Visitor typing "the quick brown fox" | −23.4 LUFS | −2.2 dBFS |
+| RETURN (lever, ratchet, carriage run, margin stop) | −26.6 LUFS | −5.7 dBFS |
+| Tour resumed at 22.7 s: bell, fast typing, return | −20.5 LUFS | −1.3 dBFS |
+| Muted | −70 LUFS (silence) | — |
+
+At 100 % volume the exact float peak of the final mix is 0.88 (−1.1 dBFS): the limiter keeps it from clipping.
+Waveforms: `validation/acceptance/sound/*.png`. One keystroke starts 12 voices (93 on the baseline at this
+display's refresh rate).
 
 ## Performance (`node scripts/perf.mjs`, 1600 × 900, tour running)
 

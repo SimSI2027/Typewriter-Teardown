@@ -13,4 +13,8 @@ Visitor-experience acceptance of the live page: sound, pause / resume / takeover
 - `sound/`: `scripts/sound-evidence.mjs`, which records the exact mix handed to the audio device (MediaRecorder on
   the destination tap) during the tour, manual typing, a carriage return and the tour's bell and return, then while
   muted. `sound-evidence.json` holds EBU R128 loudness and true peak per clip, the device's output clock advancing,
-  and the cue counts. The PNGs are the clips' waveforms.
+  and the cue counts. The PNGs are the clips' waveforms. `live-sound/` is the same run against GitHub Pages.
+- `compare/`: before | after side by side (hero, enamel close-up, loading, full explode, RESUME).
+- `teardown/`: `scripts/teardown-check.mjs` sheets: the tour and status bar, ten subsystem teardowns opened from a
+  running tour and operated by hand (before = the repaired build without the polish, after = with it). `live/` is the
+  same walkthrough against GitHub Pages.

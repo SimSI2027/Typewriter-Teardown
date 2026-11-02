@@ -1,0 +1,151 @@
+{
+ "date": "2026-11-02T14:56:14.811Z",
+ "base": "https://simsi2027.github.io/Typewriter-Teardown/",
+ "results": [
+  {
+   "name": "loads under the Pages base path with the tour running, no errors",
+   "ok": true,
+   "ms": 107
+  },
+  {
+   "name": "bundle has no local-path dependencies and the entry HTML is small",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "name": "a drag hands the machine to the visitor; the tour paper carries over",
+   "ok": true,
+   "ms": 1968
+  },
+  {
+   "name": "physical typing prints at the carriage position; space, backspace, return",
+   "ok": true,
+   "ms": 1593
+  },
+  {
+   "name": "shift (held) prints upper case through carriage shift; caps lock locks it",
+   "ok": true,
+   "ms": 1168
+  },
+  {
+   "name": "unsupported characters fail safely",
+   "ok": true,
+   "ms": 405
+  },
+  {
+   "name": "clicking the visible typewriter keys types them",
+   "ok": true,
+   "ms": 2011
+  },
+  {
+   "name": "a mouse-clicked console button keeps no focus: Space and Enter still reach the typewriter (D-01)",
+   "ok": true,
+   "ms": 1121
+  },
+  {
+   "name": "every subsystem button isolates its assembly; reassemble restores",
+   "ok": true,
+   "ms": 5249
+  },
+  {
+   "name": "every camera button moves to its view",
+   "ok": true,
+   "ms": 2643
+  },
+  {
+   "name": "x-ray and cutaway toggle",
+   "ok": true,
+   "ms": 1802
+  },
+  {
+   "name": "machine buttons: return, spacing, ribbon colour, lock",
+   "ok": true,
+   "ms": 2817
+  },
+  {
+   "name": "manual mode: pause, play, step, slow motion, speed, timeline scrub drive the visitor machine",
+   "ok": true,
+   "ms": 748
+  },
+  {
+   "name": "reset clears the sheet and returns the carriage",
+   "ok": true,
+   "ms": 419
+  },
+  {
+   "name": "sound: mute toggles, volume slider",
+   "ok": true,
+   "ms": 104
+  },
+  {
+   "name": "panels hide and show (button and Esc)",
+   "ok": true,
+   "ms": 98
+  },
+  {
+   "name": "all quality modes render without errors",
+   "ok": true,
+   "ms": 2482
+  },
+  {
+   "name": "orbit and zoom",
+   "ok": true,
+   "ms": 465
+  },
+  {
+   "name": "RESUME TOUR continues from the held position; inactivity resumes it, never mid-drag",
+   "ok": true,
+   "ms": 701
+  },
+  {
+   "name": "taking over in the middle of a tour view change continues it without a jump (D-07)",
+   "ok": true,
+   "ms": 3732
+  },
+  {
+   "name": "callout labels stay between the side panels in every view (D-08)",
+   "ok": true,
+   "ms": 52630
+  },
+  {
+   "name": "controls are keyboard accessible with visible focus",
+   "ok": true,
+   "ms": 4
+  },
+  {
+   "name": "no console errors or failed requests during the session",
+   "ok": true,
+   "ms": 0
+  },
+  {
+   "name": "layout laptop-1366 (1366×768): fits, no page scroll, no errors",
+   "ok": true,
+   "ms": 992
+  },
+  {
+   "name": "layout laptop-1280 (1280×720): fits, no page scroll, no errors",
+   "ok": true,
+   "ms": 975
+  },
+  {
+   "name": "layout desktop-1080p (1920×1080): fits, no page scroll, no errors",
+   "ok": true,
+   "ms": 1029
+  },
+  {
+   "name": "layout phone-landscape (844×390): fits, no page scroll, no errors",
+   "ok": true,
+   "ms": 1212
+  },
+  {
+   "name": "layout phone-portrait (390×844): fits, no page scroll, no errors",
+   "ok": true,
+   "ms": 1164
+  },
+  {
+   "name": "reduced motion: the tour does not start by itself, not even after 25 s of quiet (D-05)",
+   "ok": true,
+   "ms": 1352
+  }
+ ]
+}

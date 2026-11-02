@@ -1,0 +1,107 @@
+{
+ "date": "2026-11-02T14:52:06.458Z",
+ "base": "https://simsi2027.github.io/Typewriter-Teardown/",
+ "headed": false,
+ "results": [
+  {
+   "name": "sound: locked until a gesture, says so, and never pretends to be on",
+   "ok": true,
+   "ms": 3575
+  },
+  {
+   "name": "sound: ENABLE SOUND starts audio without stopping the tour; the tour is audible at the speakers",
+   "ok": true,
+   "ms": 4103
+  },
+  {
+   "name": "sound: manual keys, space, return and the platen ratchet are audible; each cue plays once",
+   "ok": true,
+   "ms": 3354
+  },
+  {
+   "name": "sound: the tour rings the margin bell, returns the carriage and turns the platen ratchet, audibly",
+   "ok": true,
+   "ms": 8142
+  },
+  {
+   "name": "sound: mute and volume work, survive pause / resume / takeover / restart, and persist",
+   "ok": true,
+   "ms": 7037
+  },
+  {
+   "name": "sound: a hidden tab suspends audio and freezes the tour; showing it resumes both",
+   "ok": true,
+   "ms": 6089
+  },
+  {
+   "name": "M1 load → tour → PAUSE → RESUME: the paused frame holds; resume continues from it",
+   "ok": true,
+   "ms": 10301
+  },
+  {
+   "name": "M2 load → tour → camera button → RESUME",
+   "ok": true,
+   "ms": 11154
+  },
+  {
+   "name": "M3 load → tour → subsystem button: manual, the view opens, the machine keeps working → RESUME",
+   "ok": true,
+   "ms": 13963
+  },
+  {
+   "name": "M4 load → tour → click a visible key: the stroke completes → RESUME",
+   "ok": true,
+   "ms": 2758
+  },
+  {
+   "name": "M5 load → tour → orbit drag → RESUME (the camera blends back, no cut)",
+   "ok": true,
+   "ms": 11205
+  },
+  {
+   "name": "M6 load → tour → scroll zoom → RESUME",
+   "ok": true,
+   "ms": 11122
+  },
+  {
+   "name": "M7 load → tour → physical keyboard → RESUME",
+   "ok": true,
+   "ms": 11248
+  },
+  {
+   "name": "M8 interrupted → idle countdown → automatic continuation from the interruption (never mid-use)",
+   "ok": true,
+   "ms": 11507
+  },
+  {
+   "name": "M9 tour completes → holds → RESTART TOUR plays from zero (RESUME never does)",
+   "ok": true,
+   "ms": 3877
+  },
+  {
+   "name": "M10 PAUSE → manual interaction → RESUME continues from the paused time",
+   "ok": true,
+   "ms": 15964
+  },
+  {
+   "name": "M11 mute → RESUME → unmute (covered in the sound tests) and M12 unlock → PAUSE → RESUME keeps sound",
+   "ok": true,
+   "ms": 7643
+  },
+  {
+   "name": "controls that are not the machine never stop the tour (sound, volume, quality, panels, focus)",
+   "ok": true,
+   "ms": 2554
+  },
+  {
+   "name": "timeline and step scrub the tour (paused) and RESUME plays on from the scrubbed point",
+   "ok": true,
+   "ms": 1621
+  },
+  {
+   "name": "M14 reduced motion: no autoplay, no idle resume, a still camera; PLAY TOUR still plays from 0",
+   "ok": true,
+   "ms": 1792
+  }
+ ]
+}
